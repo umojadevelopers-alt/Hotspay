@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+<nav class="sidebar" id="sidebar">
+  <a href="/" class="sidebar-brand">
+    <div class="brand-icon">H</div>
+    <span class="brand-text">Hotspay</span>
+  </a>
+  <div class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a href="/" class="nav-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+    <a href="/vouchers.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Vouchers</a>
+    <a href="/payments.html" class="nav-link"><i class="bi bi-credit-card"></i> Payments</a>
+    <span class="nav-section-label">Network</span>
+    <a href="/routers.html" class="nav-link"><i class="bi bi-router"></i> Routers</a>
+    <a href="/vouchers.html#profiles" class="nav-link"><i class="bi bi-layers"></i> Profiles</a>
+    <span class="nav-section-label">Analytics</span>
+    <a href="/reports.html" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link" id="nav-settings"><i class="bi bi-gear"></i> Settings</a>
+    <a href="#" class="nav-link text-danger" id="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</nav>
+
+<!-- ── Main Wrapper ───────────────────────────────────────────────────── -->
+<div class="main-wrapper">
+  <!-- Topbar -->
+  <div class="topbar">
+    <button class="btn-icon d-md-none" id="sidebar-toggle"><i class="bi bi-list"></i></button>
+    <span class="topbar-title">Dashboard</span>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <select class="form-select form-select-sm" id="lang-select" style="width:auto;">
+        <option value="en">EN</option>
+        <option value="sw">SW</option>
+        <option value="fr">FR</option>
+      </select>
+      <button class="btn-icon" id="theme-toggle" title="Toggle dark mode"><i class="bi bi-moon"></i></button>
+      <div class="user-avatar" id="user-avatar" title="User">A</div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="page-content">
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-info">
+            <h6>Total Customers</h6>
+            <h3 id="stat-customers">–</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="bi bi-ticket-perforated-fill"></i></div>
+          <div class="stat-info">
+            <h6>Active Vouchers</h6>
+            <h3 id="stat-vouchers">–</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="bi bi-currency-dollar"></i></div>
+          <div class="stat-info">
+            <h6>Today's Revenue</h6>
+            <h3 id="stat-revenue">–</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="bi bi-wifi"></i></div>
+          <div class="stat-info">
+            <h6>Active Sessions</h6>
+            <h3 id="stat-sessions">–</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-xl-7">
+        <div class="card h-100">
+          <div class="card-header">Revenue (Last 30 Days) <span class="badge bg-primary" id="revenue-total-badge">Loading…</span></div>
+          <div class="card-body"><canvas id="revenueChart" height="100"></canvas></div>
+        </div>
+      </div>
+      <div class="col-12 col-xl-5">
+        <div class="card h-100">
+          <div class="card-header">New Users per Day</div>
+          <div class="card-body"><canvas id="usersChart" height="160"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables row -->
+    <div class="row g-3">
+      <div class="col-12 col-xl-7">
+        <div class="card">
+          <div class="card-header">Recent Transactions</div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead><tr><th>Receipt</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+                <tbody id="tx-tbody"><tr><td colspan="5" class="text-center py-3 text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-xl-5">
+        <div class="card">
+          <div class="card-header">Active Sessions</div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead><tr><th>User</th><th>IP</th><th>Uptime</th></tr></thead>
+                <tbody id="sessions-tbody"><tr><td colspan="3" class="text-center py-3 text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // ── Auth guard ────────────────────────────────────────────────────────────
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = '/login';
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  // ── User info ─────────────────────────────────────────────────────────────
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const avatarEl   = document.getElementById('user-avatar');
+  if (storedUser.name) avatarEl.textContent = storedUser.name.charAt(0).toUpperCase();
+  avatarEl.title = storedUser.name || 'User';
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+  document.getElementById('nav-logout').addEventListener('click', e => {
+    e.preventDefault();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  });
+
+  // ── Dark mode toggle ──────────────────────────────────────────────────────
+  const themeBtn = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.querySelector('i').className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  themeBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    themeBtn.querySelector('i').className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  });
+
+  // ── Language ──────────────────────────────────────────────────────────────
+  const langSel = document.getElementById('lang-select');
+  langSel.value = localStorage.getItem('lang') || 'en';
+  langSel.addEventListener('change', () => localStorage.setItem('lang', langSel.value));
+
+  // ── Sidebar mobile toggle ─────────────────────────────────────────────────
+  document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  // ── Toast helper ─────────────────────────────────────────────────────────
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast-msg toast-${type}`;
+    el.textContent = msg;
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  // ── API helper ────────────────────────────────────────────────────────────
+  async function apiFetch(url) {
+    const res = await fetch(url, { headers });
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; }
+    return res.json();
+  }
+
+  // ── Load dashboard stats ──────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const data = await apiFetch('/api/reports/dashboard');
+      if (data.success) {
+        const d = data.data;
+        document.getElementById('stat-customers').textContent = d.total_customers ?? 0;
+        document.getElementById('stat-vouchers').textContent  = d.active_vouchers ?? 0;
+        document.getElementById('stat-revenue').textContent   = 'KES ' + (d.today_revenue ?? 0).toLocaleString();
+        document.getElementById('stat-sessions').textContent  = d.active_sessions ?? 0;
+      }
+    } catch { showToast('Failed to load stats', 'error'); }
+  }
+
+  // ── Revenue chart ─────────────────────────────────────────────────────────
+  let revenueChart;
+  async function loadRevenueChart() {
+    try {
+      const data = await apiFetch('/api/reports/revenue?days=30');
+      const rows = data.success ? (data.data.rows || []) : [];
+      const labels = rows.map(r => r.date);
+      const values = rows.map(r => parseFloat(r.total) || 0);
+      const total  = values.reduce((a, b) => a + b, 0);
+      document.getElementById('revenue-total-badge').textContent = 'KES ' + total.toLocaleString();
+
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+      if (revenueChart) revenueChart.destroy();
+      revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Revenue (KES)',
+            data: values,
+            borderColor: '#4f8ef7',
+            backgroundColor: 'rgba(79,142,247,.12)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    } catch { showToast('Failed to load revenue chart', 'error'); }
+  }
+
+  // ── Users per day chart ───────────────────────────────────────────────────
+  let usersChart;
+  async function loadUsersChart() {
+    try {
+      const data = await apiFetch('/api/reports/users?days=14');
+      const rows = data.success ? (data.data.rows || []) : [];
+      const ctx = document.getElementById('usersChart').getContext('2d');
+      if (usersChart) usersChart.destroy();
+      usersChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: rows.map(r => r.date),
+          datasets: [{
+            label: 'New Users',
+            data: rows.map(r => r.count || 0),
+            backgroundColor: 'rgba(39,174,96,.7)',
+            borderRadius: 6
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    } catch { showToast('Failed to load users chart', 'error'); }
+  }
+
+  // ── Recent transactions ───────────────────────────────────────────────────
+  async function loadTransactions() {
+    try {
+      const data = await apiFetch('/api/payments?limit=8');
+      const rows = data.success ? (data.data.transactions || data.data || []) : [];
+      const tbody = document.getElementById('tx-tbody');
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No transactions</td></tr>'; return; }
+      tbody.innerHTML = rows.map(tx => `
+        <tr>
+          <td><code>${tx.receipt_number || '–'}</code></td>
+          <td>KES ${parseFloat(tx.amount).toLocaleString()}</td>
+          <td><span class="badge bg-secondary text-capitalize">${tx.payment_method}</span></td>
+          <td><span class="badge ${tx.status === 'completed' ? 'bg-success' : tx.status === 'failed' ? 'bg-danger' : 'bg-warning text-dark'}">${tx.status}</span></td>
+          <td>${new Date(tx.created_at).toLocaleDateString()}</td>
+        </tr>`).join('');
+    } catch { showToast('Failed to load transactions', 'error'); }
+  }
+
+  // ── Active sessions ───────────────────────────────────────────────────────
+  async function loadSessions() {
+    try {
+      const data = await apiFetch('/api/reports/sessions?active=true&limit=8');
+      const rows = data.success ? (data.data.sessions || data.data || []) : [];
+      const tbody = document.getElementById('sessions-tbody');
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No active sessions</td></tr>'; return; }
+      tbody.innerHTML = rows.map(s => `
+        <tr>
+          <td><strong>${s.username}</strong></td>
+          <td><small>${s.ip_address || '–'}</small></td>
+          <td><small>${s.uptime || '–'}</small></td>
+        </tr>`).join('');
+    } catch { showToast('Failed to load sessions', 'error'); }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  loadStats();
+  loadRevenueChart();
+  loadUsersChart();
+  loadTransactions();
+  loadSessions();
+</script>
+</body>
+</html>

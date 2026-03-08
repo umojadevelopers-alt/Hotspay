@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routers – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <a href="/" class="sidebar-brand"><div class="brand-icon">H</div><span class="brand-text">Hotspay</span></a>
+  <div class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a href="/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+    <a href="/vouchers.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Vouchers</a>
+    <a href="/payments.html" class="nav-link"><i class="bi bi-credit-card"></i> Payments</a>
+    <span class="nav-section-label">Network</span>
+    <a href="/routers.html" class="nav-link active"><i class="bi bi-router"></i> Routers</a>
+    <a href="/vouchers.html#profiles" class="nav-link"><i class="bi bi-layers"></i> Profiles</a>
+    <span class="nav-section-label">Analytics</span>
+    <a href="/reports.html" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link" id="nav-settings"><i class="bi bi-gear"></i> Settings</a>
+    <a href="#" class="nav-link text-danger" id="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="topbar">
+    <button class="btn-icon d-md-none" id="sidebar-toggle"><i class="bi bi-list"></i></button>
+    <span class="topbar-title">Routers</span>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <select class="form-select form-select-sm" id="lang-select" style="width:auto;"><option value="en">EN</option><option value="sw">SW</option><option value="fr">FR</option></select>
+      <button class="btn-icon" id="theme-toggle"><i class="bi bi-moon"></i></button>
+      <div class="user-avatar" id="user-avatar">A</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <h4><i class="bi bi-router me-2 text-accent"></i>MikroTik Routers</h4>
+      <button class="btn btn-primary" id="btn-add-router"><i class="bi bi-plus-lg me-1"></i>Add Router</button>
+    </div>
+
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>#</th><th>Name</th><th>Host</th><th>Port</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="routers-tbody"><tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Router Modal -->
+<div class="modal fade" id="routerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="router-modal-title">Add Router</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="router-alert" class="alert d-none"></div>
+        <input type="hidden" id="router-id" />
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="router-name" placeholder="Main Router" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Host / IP <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="router-host" placeholder="192.168.88.1" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">API Port</label>
+            <input type="number" class="form-control" id="router-port" value="8728" min="1" max="65535" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">API User <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="router-user" placeholder="admin" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">API Password <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="router-password" placeholder="••••••••" />
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Location</label>
+            <input type="text" class="form-control" id="router-location" placeholder="Head Office" />
+          </div>
+          <div class="col-auto">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" id="router-active" checked />
+              <label class="form-check-label" for="router-active">Active</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-info me-auto" id="btn-test-conn"><i class="bi bi-wifi me-1"></i>Test Connection</button>
+        <button type="button" class="btn btn-primary" id="btn-save-router">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Health Stats Modal -->
+<div class="modal fade" id="healthModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Router Health</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="health-body">
+        <div class="text-center py-3"><span class="spinner-border"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteRouterModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0"><h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Delete?</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">Delete router <strong id="delete-router-name"></strong>?</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-delete-router">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = '/login';
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  if (storedUser.name) document.getElementById('user-avatar').textContent = storedUser.name.charAt(0).toUpperCase();
+
+  document.getElementById('nav-logout').addEventListener('click', e => { e.preventDefault(); localStorage.clear(); window.location.href = '/login'; });
+  document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+  const themeBtn = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.querySelector('i').className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    themeBtn.querySelector('i').className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  });
+  const langSel = document.getElementById('lang-select');
+  langSel.value = localStorage.getItem('lang') || 'en';
+  langSel.addEventListener('change', () => localStorage.setItem('lang', langSel.value));
+
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div'); el.className = `toast-msg toast-${type}`; el.textContent = msg; c.appendChild(el); setTimeout(() => el.remove(), 3500);
+  }
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  let allRouters = [];
+
+  async function loadRouters() {
+    try {
+      const res  = await fetch('/api/routers', { headers });
+      if (res.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+      const data = await res.json();
+      allRouters = data.success ? (data.data.routers || data.data || []) : [];
+      renderRouters();
+    } catch { showToast('Failed to load routers', 'error'); }
+  }
+
+  function renderRouters() {
+    const tbody = document.getElementById('routers-tbody');
+    if (!allRouters.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No routers configured</td></tr>'; return; }
+    tbody.innerHTML = allRouters.map((r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${escHtml(r.name)}</strong></td>
+        <td><code>${escHtml(r.host)}</code></td>
+        <td>${r.api_port || 8728}</td>
+        <td>${escHtml(r.location || '–')}</td>
+        <td><span class="badge ${r.is_active ? 'bg-success' : 'bg-secondary'}">${r.is_active ? 'Active' : 'Inactive'}</span></td>
+        <td class="d-flex gap-1 flex-wrap">
+          <button class="btn btn-sm btn-outline-primary" onclick="openEdit(${r.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-info" onclick="testConnection(${r.id})" title="Test"><i class="bi bi-wifi"></i></button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="viewHealth(${r.id})" title="Health"><i class="bi bi-activity"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(${r.id},'${escHtml(r.name)}')" title="Delete"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function clearRouterForm() {
+    ['router-id','router-name','router-host','router-user','router-password','router-location'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('router-port').value   = '8728';
+    document.getElementById('router-active').checked = true;
+    document.getElementById('router-alert').className = 'alert d-none';
+  }
+
+  // Add
+  document.getElementById('btn-add-router').addEventListener('click', () => {
+    clearRouterForm();
+    document.getElementById('router-modal-title').textContent = 'Add Router';
+    new bootstrap.Modal(document.getElementById('routerModal')).show();
+  });
+
+  // Edit
+  function openEdit(id) {
+    const r = allRouters.find(x => x.id === id);
+    if (!r) return;
+    clearRouterForm();
+    document.getElementById('router-id').value       = r.id;
+    document.getElementById('router-name').value     = r.name        || '';
+    document.getElementById('router-host').value     = r.host        || '';
+    document.getElementById('router-port').value     = r.api_port    || 8728;
+    document.getElementById('router-user').value     = r.api_user    || '';
+    document.getElementById('router-location').value = r.location    || '';
+    document.getElementById('router-active').checked = !!r.is_active;
+    document.getElementById('router-modal-title').textContent = 'Edit Router';
+    new bootstrap.Modal(document.getElementById('routerModal')).show();
+  }
+
+  // Save
+  document.getElementById('btn-save-router').addEventListener('click', async () => {
+    const id       = document.getElementById('router-id').value;
+    const name     = document.getElementById('router-name').value.trim();
+    const host     = document.getElementById('router-host').value.trim();
+    const api_port = parseInt(document.getElementById('router-port').value) || 8728;
+    const api_user = document.getElementById('router-user').value.trim();
+    const api_password = document.getElementById('router-password').value;
+    const location = document.getElementById('router-location').value.trim();
+    const is_active = document.getElementById('router-active').checked;
+    const alertEl  = document.getElementById('router-alert');
+
+    if (!name) { alertEl.className = 'alert alert-danger'; alertEl.textContent = 'Name is required.'; return; }
+    if (!host) { alertEl.className = 'alert alert-danger'; alertEl.textContent = 'Host is required.'; return; }
+    if (!api_user) { alertEl.className = 'alert alert-danger'; alertEl.textContent = 'API user is required.'; return; }
+    if (!id && !api_password) { alertEl.className = 'alert alert-danger'; alertEl.textContent = 'Password is required for new router.'; return; }
+
+    const body = { name, host, api_port, api_user, location, is_active };
+    if (api_password) body.api_password = api_password;
+
+    try {
+      const url = id ? `/api/routers/${id}` : '/api/routers';
+      const res  = await fetch(url, { method: id ? 'PUT' : 'POST', headers, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('routerModal')).hide();
+        showToast(id ? 'Router updated' : 'Router added', 'success');
+        loadRouters();
+      } else { alertEl.className = 'alert alert-danger'; alertEl.textContent = data.message || 'Failed to save.'; }
+    } catch { alertEl.className = 'alert alert-danger'; alertEl.textContent = 'Network error.'; }
+  });
+
+  // Test connection
+  async function testConnection(id) {
+    showToast('Testing connection…', 'info');
+    try {
+      const res  = await fetch(`/api/routers/${id}/test`, { method: 'POST', headers });
+      const data = await res.json();
+      if (data.success) showToast('Connection successful!', 'success');
+      else showToast('Connection failed: ' + (data.message || 'Unknown error'), 'error');
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  // Test from modal
+  document.getElementById('btn-test-conn').addEventListener('click', async () => {
+    const id = document.getElementById('router-id').value;
+    if (id) { await testConnection(id); return; }
+    showToast('Save the router first to test the connection.', 'info');
+  });
+
+  // Health
+  async function viewHealth(id) {
+    document.getElementById('health-body').innerHTML = '<div class="text-center py-3"><span class="spinner-border"></span></div>';
+    new bootstrap.Modal(document.getElementById('healthModal')).show();
+    try {
+      const res  = await fetch(`/api/hotspot/${id}/health`, { headers });
+      const data = await res.json();
+      if (data.success) {
+        const h = data.data || {};
+        document.getElementById('health-body').innerHTML = `
+          <div class="row g-3">
+            <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon green"><i class="bi bi-cpu"></i></div><div class="stat-info"><h6>CPU</h6><h3>${h.cpu_load ?? '–'}%</h3></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon blue"><i class="bi bi-memory"></i></div><div class="stat-info"><h6>Memory</h6><h3>${h.free_memory ?? '–'}</h3></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon orange"><i class="bi bi-hdd"></i></div><div class="stat-info"><h6>HDD</h6><h3>${h.free_hdd ?? '–'}</h3></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon purple"><i class="bi bi-clock"></i></div><div class="stat-info"><h6>Uptime</h6><h3 style="font-size:14px">${h.uptime ?? '–'}</h3></div></div></div>
+            <div class="col-12"><p class="mb-0 text-muted small">RouterOS: ${h.ros_version ?? '–'} | Model: ${h.board_name ?? '–'} | Serial: ${h.serial_number ?? '–'}</p></div>
+          </div>`;
+      } else {
+        document.getElementById('health-body').innerHTML = `<div class="alert alert-danger">${escHtml(data.message || 'Failed to load health data.')}</div>`;
+      }
+    } catch {
+      document.getElementById('health-body').innerHTML = '<div class="alert alert-danger">Network error.</div>';
+    }
+  }
+
+  // Delete
+  let deleteRouterId = null;
+  function confirmDelete(id, name) {
+    deleteRouterId = id;
+    document.getElementById('delete-router-name').textContent = name;
+    new bootstrap.Modal(document.getElementById('deleteRouterModal')).show();
+  }
+
+  document.getElementById('btn-confirm-delete-router').addEventListener('click', async () => {
+    if (!deleteRouterId) return;
+    const res  = await fetch(`/api/routers/${deleteRouterId}`, { method: 'DELETE', headers });
+    const data = await res.json();
+    bootstrap.Modal.getInstance(document.getElementById('deleteRouterModal')).hide();
+    if (data.success) { showToast('Router deleted', 'success'); loadRouters(); }
+    else showToast(data.message || 'Delete failed', 'error');
+  });
+
+  loadRouters();
+</script>
+</body>
+</html>

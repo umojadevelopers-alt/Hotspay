@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .lang-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 6px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
+    .lang-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .input-icon-wrapper { position: relative; }
+    .input-icon-wrapper .bi { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+    .input-icon-wrapper input { padding-left: 36px; }
+    .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center gap-2 mb-2">
+        <div style="width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;">H</div>
+        <span style="font-size:26px;font-weight:800;color:var(--text-primary);">Hotspay</span>
+      </div>
+      <p class="text-muted mb-0" style="font-size:13px;" id="lbl-subtitle">MikroTik Hotspot Billing System</p>
+    </div>
+
+    <!-- Language selector -->
+    <div class="d-flex gap-1 justify-content-center mb-4">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="sw">SW</button>
+      <button class="lang-btn" data-lang="fr">FR</button>
+    </div>
+
+    <!-- Alert -->
+    <div id="alert-box" class="alert d-none mb-3 py-2" role="alert"></div>
+
+    <!-- Form -->
+    <form id="login-form" novalidate>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" id="lbl-email">Email Address</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-envelope"></i>
+          <input type="email" class="form-control" id="email" placeholder="admin@hotspay.local" autocomplete="username" required />
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold" id="lbl-password">Password</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-lock"></i>
+          <input type="password" class="form-control" id="password" placeholder="••••••••" autocomplete="current-password" required />
+          <button type="button" class="toggle-pass" id="toggle-pass"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="btn-login">
+        <span id="btn-text">Sign In</span>
+        <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <small class="text-muted">© 2024 Hotspay. All rights reserved.</small>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── i18n strings ──────────────────────────────────────────────────────────
+  const i18n = {
+    en: { subtitle:'MikroTik Hotspot Billing System', email:'Email Address', password:'Password', signin:'Sign In', error_creds:'Invalid email or password.', error_network:'Network error. Please try again.', error_disabled:'Your account is disabled.' },
+    sw: { subtitle:'Mfumo wa Bili ya Hotspot ya MikroTik', email:'Barua Pepe', password:'Nenosiri', signin:'Ingia', error_creds:'Barua pepe au nenosiri si sahihi.', error_network:'Hitilafu ya mtandao. Jaribu tena.', error_disabled:'Akaunti yako imezuiwa.' },
+    fr: { subtitle:'Système de Facturation Hotspot MikroTik', email:'Adresse e-mail', password:'Mot de passe', signin:'Se connecter', error_creds:'Email ou mot de passe invalide.', error_network:'Erreur réseau. Réessayez.', error_disabled:'Votre compte est désactivé.' }
+  };
+  let lang = localStorage.getItem('lang') || 'en';
+
+  function applyLang(l) {
+    lang = l;
+    localStorage.setItem('lang', l);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+    const t = i18n[l] || i18n.en;
+    document.getElementById('lbl-subtitle').textContent = t.subtitle;
+    document.getElementById('lbl-email').textContent    = t.email;
+    document.getElementById('lbl-password').textContent = t.password;
+    document.getElementById('btn-text').textContent     = t.signin;
+    document.documentElement.lang = l;
+  }
+  applyLang(lang);
+
+  document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+
+  // ── Password toggle ───────────────────────────────────────────────────────
+  document.getElementById('toggle-pass').addEventListener('click', function () {
+    const inp = document.getElementById('password');
+    const icon = this.querySelector('i');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else                         { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+  });
+
+  // ── Redirect if already logged in ────────────────────────────────────────
+  if (localStorage.getItem('token')) window.location.href = '/';
+
+  // ── Login form submit ─────────────────────────────────────────────────────
+  document.getElementById('login-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const alertBox = document.getElementById('alert-box');
+    const btnText  = document.getElementById('btn-text');
+    const spinner  = document.getElementById('btn-spinner');
+    const t        = i18n[lang] || i18n.en;
+
+    alertBox.className = 'alert d-none mb-3 py-2';
+    btnText.textContent = t.signin;
+    spinner.classList.add('d-none');
+
+    if (!email || !password) return;
+
+    btnText.textContent = '...';
+    spinner.classList.remove('d-none');
+    document.getElementById('btn-login').disabled = true;
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        window.location.href = '/';
+      } else {
+        let msg = t.error_creds;
+        if (data.message && data.message.toLowerCase().includes('disabled')) msg = t.error_disabled;
+        alertBox.className = 'alert alert-danger mb-3 py-2';
+        alertBox.textContent = msg;
+      }
+    } catch {
+      alertBox.className = 'alert alert-danger mb-3 py-2';
+      alertBox.textContent = t.error_network;
+    } finally {
+      btnText.textContent = t.signin;
+      spinner.classList.add('d-none');
+      document.getElementById('btn-login').disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
