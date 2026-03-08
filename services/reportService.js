@@ -43,14 +43,30 @@ const reportService = {
   },
 
   /**
-   * Get revenue data grouped by period.
+   * Get revenue data grouped by period or custom date range.
    * @param {'daily'|'weekly'|'monthly'} period
+   * @param {string} [from] - Start date (YYYY-MM-DD), overrides period default range
+   * @param {string} [to] - End date (YYYY-MM-DD), overrides period default range
    * @returns {Promise<Array>} Array of { label, total, count }
    */
-  async getRevenueChart(period = 'daily') {
+  async getRevenueChart(period = 'daily', from = null, to = null) {
     let sql;
+    const params = [];
 
-    if (period === 'monthly') {
+    if (from && to) {
+      // Custom date range — always return daily grouping
+      sql = `
+        SELECT DATE(created_at)  AS label,
+               DATE(created_at)  AS date,
+               SUM(amount)       AS total,
+               COUNT(*)          AS count
+        FROM transactions
+        WHERE status = 'completed'
+          AND DATE(created_at) BETWEEN ? AND ?
+        GROUP BY label
+        ORDER BY label ASC`;
+      params.push(from, to);
+    } else if (period === 'monthly') {
       sql = `
         SELECT DATE_FORMAT(created_at, '%Y-%m') AS label,
                SUM(amount)                       AS total,
@@ -74,6 +90,7 @@ const reportService = {
       // daily — last 30 days
       sql = `
         SELECT DATE(created_at)  AS label,
+               DATE(created_at)  AS date,
                SUM(amount)       AS total,
                COUNT(*)          AS count
         FROM transactions
@@ -83,7 +100,7 @@ const reportService = {
         ORDER BY label ASC`;
     }
 
-    const [rows] = await query(sql, []);
+    const [rows] = await query(sql, params);
     return rows;
   },
 
@@ -201,8 +218,9 @@ const reportService = {
     workbook.creator = process.env.APP_NAME || 'Hotspay';
     workbook.created = new Date();
 
-    const ts = Date.now();
-    const sheetName = `${title.substring(0, 24)}-${ts}`.substring(0, 31);
+    const ts = String(Date.now()); // 13 digits
+    const maxTitleLen = 31 - 1 - ts.length; // reserve 1 for '-' separator
+    const sheetName = `${title.substring(0, maxTitleLen)}-${ts}`;
     const sheet = workbook.addWorksheet(sheetName);
 
     if (!data || data.length === 0) {

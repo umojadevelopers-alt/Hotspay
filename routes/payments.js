@@ -34,7 +34,7 @@ router.get('/', authenticate, requireRole('viewer'), async (req, res) => {
 // POST /api/payments/cash - record cash payment
 router.post('/cash', authenticate, requireRole('cashier'), async (req, res) => {
   try {
-    const { customer_id, voucher_id, amount, notes } = req.body;
+    const { customer_id, voucher_id, voucher_username, amount, notes } = req.body;
     if (!amount) {
       return res.status(400).json({ success: false, message: 'amount is required' });
     }
@@ -44,17 +44,27 @@ router.post('/cash', authenticate, requireRole('cashier'), async (req, res) => {
       return res.status(400).json({ success: false, message: 'amount must be a positive number' });
     }
 
+    // Resolve voucher_username to voucher_id if provided
+    let resolvedVoucherId = voucher_id ? parseInt(voucher_id) : null;
+    if (!resolvedVoucherId && voucher_username) {
+      const voucher = await Voucher.findByUsername(voucher_username.trim());
+      if (!voucher) {
+        return res.status(404).json({ success: false, message: 'Voucher not found' });
+      }
+      resolvedVoucherId = voucher.id;
+    }
+
     const transaction = await Transaction.create({
       customer_id: customer_id ? parseInt(customer_id) : null,
-      voucher_id: voucher_id ? parseInt(voucher_id) : null,
+      voucher_id: resolvedVoucherId,
       amount: parsedAmount,
       payment_method: 'cash',
       status: 'completed',
       notes,
     });
 
-    if (voucher_id) {
-      await Voucher.markAsUsed(parseInt(voucher_id), customer_id ? parseInt(customer_id) : null);
+    if (resolvedVoucherId) {
+      await Voucher.markAsUsed(resolvedVoucherId, customer_id ? parseInt(customer_id) : null);
     }
 
     return res.status(201).json({ success: true, message: 'Cash payment recorded', data: { transaction } });
@@ -67,7 +77,7 @@ router.post('/cash', authenticate, requireRole('cashier'), async (req, res) => {
 // POST /api/payments/mpesa/initiate - initiate M-Pesa STK push
 router.post('/mpesa/initiate', authenticate, requireRole('cashier'), async (req, res) => {
   try {
-    const { phone, amount, voucher_id, customer_id, description } = req.body;
+    const { phone, amount, voucher_id, voucher_username, customer_id, description } = req.body;
     if (!phone || !amount) {
       return res.status(400).json({ success: false, message: 'phone and amount are required' });
     }
@@ -77,7 +87,17 @@ router.post('/mpesa/initiate', authenticate, requireRole('cashier'), async (req,
       return res.status(400).json({ success: false, message: 'amount must be a positive number' });
     }
 
-    const accountRef = voucher_id ? `Voucher-${voucher_id}` : 'HotspayWifi';
+    // Resolve voucher_username to voucher_id if provided
+    let resolvedVoucherId = voucher_id ? parseInt(voucher_id) : null;
+    if (!resolvedVoucherId && voucher_username) {
+      const voucher = await Voucher.findByUsername(voucher_username.trim());
+      if (!voucher) {
+        return res.status(404).json({ success: false, message: 'Voucher not found' });
+      }
+      resolvedVoucherId = voucher.id;
+    }
+
+    const accountRef = resolvedVoucherId ? `Voucher-${resolvedVoucherId}` : 'HotspayWifi';
     const txDesc = description || 'Wi-Fi Voucher Payment';
 
     const stkResponse = await mpesaService.stkPush(phone, parsedAmount, accountRef, txDesc);
@@ -85,7 +105,7 @@ router.post('/mpesa/initiate', authenticate, requireRole('cashier'), async (req,
     // Record pending transaction
     const transaction = await Transaction.create({
       customer_id: customer_id ? parseInt(customer_id) : null,
-      voucher_id: voucher_id ? parseInt(voucher_id) : null,
+      voucher_id: resolvedVoucherId,
       amount: parsedAmount,
       payment_method: 'mpesa',
       payment_reference: stkResponse.CheckoutRequestID,
@@ -131,7 +151,7 @@ router.post('/mpesa/callback', async (req, res) => {
 // POST /api/payments/paypal/create-order
 router.post('/paypal/create-order', authenticate, requireRole('cashier'), async (req, res) => {
   try {
-    const { amount, currency, description, voucher_id, customer_id } = req.body;
+    const { amount, currency, description, voucher_id, voucher_username, customer_id } = req.body;
     if (!amount) {
       return res.status(400).json({ success: false, message: 'amount is required' });
     }
@@ -141,12 +161,22 @@ router.post('/paypal/create-order', authenticate, requireRole('cashier'), async 
       return res.status(400).json({ success: false, message: 'amount must be a positive number' });
     }
 
+    // Resolve voucher_username to voucher_id if provided
+    let resolvedVoucherId = voucher_id ? parseInt(voucher_id) : null;
+    if (!resolvedVoucherId && voucher_username) {
+      const voucher = await Voucher.findByUsername(voucher_username.trim());
+      if (!voucher) {
+        return res.status(404).json({ success: false, message: 'Voucher not found' });
+      }
+      resolvedVoucherId = voucher.id;
+    }
+
     const order = await paypalService.createOrder(parsedAmount, currency || 'USD', description || 'Wi-Fi Voucher');
 
     // Record pending transaction linked to PayPal order ID
     const transaction = await Transaction.create({
       customer_id: customer_id ? parseInt(customer_id) : null,
-      voucher_id: voucher_id ? parseInt(voucher_id) : null,
+      voucher_id: resolvedVoucherId,
       amount: parsedAmount,
       payment_method: 'paypal',
       payment_reference: order.id,

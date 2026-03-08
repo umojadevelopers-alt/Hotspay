@@ -34,11 +34,19 @@ function buildStkPassword(timestamp) {
  * @returns {string}
  */
 function getTimestamp() {
-  // EAT is UTC+3; offset in minutes = 180
+  // EAT is UTC+3; build timestamp from UTC components directly
   const now = new Date();
-  const eatOffset = 3 * 60 * 60 * 1000;
-  const eat = new Date(now.getTime() + eatOffset);
-  return eat.toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+  const eatMs = now.getTime() + 3 * 60 * 60 * 1000;
+  const d = new Date(eatMs);
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    d.getUTCFullYear() +
+    pad(d.getUTCMonth() + 1) +
+    pad(d.getUTCDate()) +
+    pad(d.getUTCHours()) +
+    pad(d.getUTCMinutes()) +
+    pad(d.getUTCSeconds())
+  );
 }
 
 const mpesaService = {

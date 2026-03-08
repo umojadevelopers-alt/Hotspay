@@ -91,7 +91,17 @@ const voucherService = {
   async generateVoucherPDF(vouchers, options = {}) {
     const { ssid = process.env.APP_NAME || 'Hotspay', title = 'Wi-Fi Vouchers' } = options;
 
-    return new Promise(async (resolve, reject) => {
+    // Pre-generate QR codes outside the Promise executor (await is not allowed there)
+    const qrMap = {};
+    for (const v of vouchers) {
+      try {
+        qrMap[v.id || v.username] = await this.generateQRCode(v);
+      } catch {
+        qrMap[v.id || v.username] = null;
+      }
+    }
+
+    return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ margin: 30, size: 'A4' });
         const buffers = [];
@@ -166,22 +176,22 @@ const voucherService = {
             curY += 12;
           }
 
-          // QR code
-          try {
-            const qrDataUrl = await this.generateQRCode(v);
-            // Convert data URL to buffer
-            const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, '');
-            const qrBuffer = Buffer.from(base64Data, 'base64');
-            const qrSize = Math.min(cardW - 10, cardH - (curY - y) - 10);
-            if (qrSize > 20) {
-              doc.image(qrBuffer, x + (cardW - qrSize) / 2, curY, {
-                width: qrSize,
-                height: qrSize,
-              });
+          // QR code (pre-generated)
+          const qrDataUrl = qrMap[v.id || v.username];
+          if (qrDataUrl) {
+            try {
+              const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, '');
+              const qrBuffer = Buffer.from(base64Data, 'base64');
+              const qrSize = Math.min(cardW - 10, cardH - (curY - y) - 10);
+              if (qrSize > 20) {
+                doc.image(qrBuffer, x + (cardW - qrSize) / 2, curY, {
+                  width: qrSize,
+                  height: qrSize,
+                });
+              }
+            } catch (imgErr) {
+              console.warn(`[voucherService] QR image embed failed for ${v.username}: ${imgErr.message}`);
             }
-          } catch (qrErr) {
-            // QR generation failure is non-fatal; log for diagnostics
-            console.warn(`[voucherService] QR code failed for voucher ${v.id} (${v.username}): ${qrErr.message}`);
           }
         }
 

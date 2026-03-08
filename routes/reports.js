@@ -17,12 +17,13 @@ router.get('/dashboard', authenticate, requireRole('viewer'), async (req, res) =
   }
 });
 
-// GET /api/reports/revenue?period=daily|weekly|monthly
+// GET /api/reports/revenue?period=daily|weekly|monthly&from=YYYY-MM-DD&to=YYYY-MM-DD
 router.get('/revenue', authenticate, requireRole('viewer'), async (req, res) => {
   try {
     const period = ['daily', 'weekly', 'monthly'].includes(req.query.period) ? req.query.period : 'daily';
-    const data = await reportService.getRevenueChart(period);
-    return res.json({ success: true, message: 'Revenue chart data retrieved', data: { period, chart: data } });
+    const { from, to } = req.query;
+    const data = await reportService.getRevenueChart(period, from, to);
+    return res.json({ success: true, message: 'Revenue chart data retrieved', data: { period, rows: data, chart: data } });
   } catch (err) {
     console.error('[reports GET /revenue]', err);
     return res.status(500).json({ success: false, message: 'Internal server error' });

@@ -190,7 +190,7 @@
         <td>${i + 1}</td>
         <td><strong>${escHtml(r.name)}</strong></td>
         <td><code>${escHtml(r.host)}</code></td>
-        <td>${r.api_port || 8728}</td>
+        <td>${r.port || 8728}</td>
         <td>${escHtml(r.location || '–')}</td>
         <td><span class="badge ${r.is_active ? 'bg-success' : 'bg-secondary'}">${r.is_active ? 'Active' : 'Inactive'}</span></td>
         <td class="d-flex gap-1 flex-wrap">
