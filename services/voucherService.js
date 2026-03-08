@@ -12,14 +12,12 @@ const CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // omit ambiguous chars (0,O
 
 /**
  * Generate a random alphanumeric string of given length.
+ * Uses crypto.randomInt to avoid modulo bias.
  * @param {number} length
  * @returns {string}
  */
 function randomString(length) {
-  const bytes = crypto.randomBytes(length);
-  return Array.from(bytes)
-    .map((b) => CHARSET[b % CHARSET.length])
-    .join('');
+  return Array.from({ length }, () => CHARSET[crypto.randomInt(CHARSET.length)]).join('');
 }
 
 const voucherService = {
