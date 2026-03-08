@@ -115,6 +115,7 @@ app.use('/api/routers', require('./routes/routers'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/sms', require('./routes/sms'));
 app.use('/api/profiles', require('./routes/profiles'));
+app.use('/api/wireguard', require('./routes/wireguard'));
 
 // Serve frontend pages
 app.get('/', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
