@@ -46,6 +46,7 @@ services:
       SMS_ENABLED: ${SMS_ENABLED:-false}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      WIREGUARD_ENABLED: ${WIREGUARD_ENABLED:-true}
     depends_on:
       mysql:
         condition: service_healthy
