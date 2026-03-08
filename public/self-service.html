@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self Service – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: linear-gradient(135deg, #1a2236 0%, #2d4a8a 100%); min-height: 100vh; }
+    .ss-card { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+    .nav-tabs .nav-link { color: #6b7a99; font-weight: 600; }
+    .nav-tabs .nav-link.active { color: #4f8ef7; border-bottom: 3px solid #4f8ef7; }
+    .package-card { border: 2px solid #e3e8f0; border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all .2s; }
+    .package-card:hover, .package-card.selected { border-color: #4f8ef7; background: rgba(79,142,247,.05); }
+    .package-card .price { font-size: 22px; font-weight: 800; color: #4f8ef7; }
+    .package-card .name  { font-weight: 600; font-size: 15px; }
+    .package-card .meta  { font-size: 12px; color: #6b7a99; }
+    .lang-btns { display: flex; gap: 6px; justify-content: center; }
+    .lang-btn { background: none; border: 1px solid #e3e8f0; color: #6b7a99; border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+    .lang-btn.active { background: #4f8ef7; border-color: #4f8ef7; color: #fff; }
+  </style>
+</head>
+<body>
+<div class="d-flex align-items-center justify-content-center min-vh-100 py-4 px-3">
+  <div class="ss-card w-100">
+    <!-- Header -->
+    <div class="p-4 pb-0">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div style="width:38px;height:38px;background:#4f8ef7;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;">H</div>
+          <span style="font-size:20px;font-weight:800;color:#1a2236;">Hotspay</span>
+        </div>
+        <div class="lang-btns">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="sw">SW</button>
+          <button class="lang-btn" data-lang="fr">FR</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs border-0 mb-0" id="ss-tabs">
+        <li class="nav-item"><button class="nav-link active px-3 py-2" data-tab="buy" id="lbl-tab-buy">Buy Voucher</button></li>
+        <li class="nav-item"><button class="nav-link px-3 py-2" data-tab="check" id="lbl-tab-check">Check Balance</button></li>
+      </ul>
+    </div>
+    <hr class="my-0" />
+
+    <!-- Tab: Buy Voucher -->
+    <div class="p-4" id="tab-buy">
+      <p class="text-muted small mb-3" id="lbl-select-pkg">Select a package:</p>
+      <div id="packages-list" class="d-flex flex-column gap-2 mb-4">
+        <div class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading packages…</div>
+      </div>
+
+      <!-- Phone & Pay -->
+      <div id="buy-form-section" class="d-none">
+        <hr />
+        <div class="mb-3">
+          <label class="form-label fw-semibold" id="lbl-phone">Phone Number (M-Pesa)</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-phone"></i></span>
+            <input type="tel" class="form-control" id="buy-phone" placeholder="254700000000" />
+          </div>
+          <div class="form-text" id="lbl-phone-hint">Format: 254XXXXXXXXX</div>
+        </div>
+        <div id="buy-alert" class="alert d-none mb-3"></div>
+        <div id="buy-pending" class="alert alert-info d-none py-2 text-center">
+          <span class="spinner-border spinner-border-sm me-2"></span><span id="lbl-waiting">Waiting for payment confirmation…</span>
+        </div>
+        <button class="btn btn-warning w-100 fw-bold text-white py-2" id="btn-pay-mpesa">
+          <i class="bi bi-send me-2"></i><span id="lbl-pay">Pay via M-Pesa</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab: Check Balance -->
+    <div class="p-4 d-none" id="tab-check">
+      <p class="text-muted small mb-3" id="lbl-enter-voucher">Enter your voucher code to check status:</p>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" id="lbl-code">Voucher Code</label>
+        <input type="text" class="form-control" id="check-code" placeholder="HSP-001" autocapitalize="off" />
+      </div>
+      <button class="btn btn-primary w-100" id="btn-check"><i class="bi bi-search me-2"></i><span id="lbl-check-btn">Check Status</span></button>
+      <div id="check-result" class="mt-3 d-none"></div>
+    </div>
+
+    <div class="px-4 pb-3 text-center">
+      <a href="/hotspot-login.html" class="text-muted small"><i class="bi bi-arrow-left me-1"></i><span id="lbl-back">Back to Login</span></a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── i18n ──────────────────────────────────────────────────────────────────
+  const i18n = {
+    en: { buy:'Buy Voucher', check:'Check Balance', select_pkg:'Select a package:', phone:'Phone Number (M-Pesa)', phone_hint:'Format: 254XXXXXXXXX', pay:'Pay via M-Pesa', waiting:'Waiting for payment confirmation…', enter_voucher:'Enter your voucher code to check status:', code:'Voucher Code', check_btn:'Check Status', back:'Back to Login', err_select:'Please select a package first.', err_phone:'Please enter your phone number.', err_net:'Network error. Please try again.', status_available:'✅ Available – not yet used.', status_used:'🔴 Already used.', status_expired:'⚠️ Expired.', status_unknown:'❓ Voucher not found.', stk_sent:'STK Push sent! Check your phone.' },
+    sw: { buy:'Nunua Vocha', check:'Angalia Salio', select_pkg:'Chagua paketi:', phone:'Nambari ya Simu (M-Pesa)', phone_hint:'Umbizo: 254XXXXXXXXX', pay:'Lipa kupitia M-Pesa', waiting:'Kusubiri uthibitisho wa malipo…', enter_voucher:'Ingiza nambari ya vocha kuangalia hali:', code:'Nambari ya Vocha', check_btn:'Angalia Hali', back:'Rudi Kuingia', err_select:'Tafadhali chagua paketi kwanza.', err_phone:'Tafadhali ingiza nambari yako ya simu.', err_net:'Hitilafu ya mtandao. Jaribu tena.', status_available:'✅ Inapatikana – bado haijatumika.', status_used:'🔴 Imetumika tayari.', status_expired:'⚠️ Imeisha muda.', status_unknown:'❓ Vocha haipatikani.', stk_sent:'STK Push imetumwa! Angalia simu yako.' },
+    fr: { buy:'Acheter un Bon', check:'Vérifier Solde', select_pkg:'Sélectionnez un forfait :', phone:'Numéro de téléphone (M-Pesa)', phone_hint:'Format : 254XXXXXXXXX', pay:'Payer via M-Pesa', waiting:'En attente de confirmation de paiement…', enter_voucher:'Entrez votre code bon pour vérifier le statut :', code:'Code Bon', check_btn:'Vérifier', back:'Retour à la connexion', err_select:'Veuillez d\'abord sélectionner un forfait.', err_phone:'Veuillez entrer votre numéro de téléphone.', err_net:'Erreur réseau. Réessayez.', status_available:'✅ Disponible – pas encore utilisé.', status_used:'🔴 Déjà utilisé.', status_expired:'⚠️ Expiré.', status_unknown:'❓ Bon introuvable.', stk_sent:'STK Push envoyé ! Vérifiez votre téléphone.' }
+  };
+  let lang = localStorage.getItem('lang') || 'en';
+  let selectedProfile = null;
+
+  function applyLang(l) {
+    lang = l; localStorage.setItem('lang', l);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+    const t = i18n[l] || i18n.en;
+    document.getElementById('lbl-tab-buy').textContent    = t.buy;
+    document.getElementById('lbl-tab-check').textContent  = t.check;
+    document.getElementById('lbl-select-pkg').textContent = t.select_pkg;
+    document.getElementById('lbl-phone').textContent      = t.phone;
+    document.getElementById('lbl-phone-hint').textContent = t.phone_hint;
+    document.getElementById('lbl-pay').textContent        = t.pay;
+    document.getElementById('lbl-waiting').textContent    = t.waiting;
+    document.getElementById('lbl-enter-voucher').textContent = t.enter_voucher;
+    document.getElementById('lbl-code').textContent       = t.code;
+    document.getElementById('lbl-check-btn').textContent  = t.check_btn;
+    document.getElementById('lbl-back').textContent       = t.back;
+    document.documentElement.lang = l;
+  }
+  document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+  applyLang(lang);
+
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  document.querySelectorAll('#ss-tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#ss-tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-buy').classList.toggle('d-none',   btn.dataset.tab !== 'buy');
+      document.getElementById('tab-check').classList.toggle('d-none', btn.dataset.tab !== 'check');
+    });
+  });
+
+  // ── Load packages ─────────────────────────────────────────────────────────
+  async function loadPackages() {
+    try {
+      const res  = await fetch('/api/profiles');
+      const data = await res.json();
+      const profiles = data.success ? (data.data.profiles || data.data || []) : [];
+      const container = document.getElementById('packages-list');
+      if (!profiles.length) { container.innerHTML = '<p class="text-muted text-center">No packages available.</p>'; return; }
+      container.innerHTML = profiles.map(p => `
+        <div class="package-card" data-id="${p.id}" data-price="${p.price}" data-name="${escHtml(p.display_name || p.name)}">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="name">${escHtml(p.display_name || p.name)}</div>
+              <div class="meta">
+                ${p.duration ? '<i class="bi bi-clock me-1"></i>' + escHtml(p.duration) : ''}
+                ${p.speed_down ? ' &nbsp;↓' + escHtml(p.speed_down) + ' ↑' + escHtml(p.speed_up||'?') : ''}
+                ${p.data_limit ? ' &nbsp;<i class="bi bi-database me-1"></i>' + escHtml(p.data_limit) : ''}
+              </div>
+            </div>
+            <div class="price">KES ${parseFloat(p.price).toLocaleString()}</div>
+          </div>
+        </div>`).join('');
+
+      document.querySelectorAll('.package-card').forEach(card => {
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedProfile = { id: card.dataset.id, price: card.dataset.price, name: card.dataset.name };
+          document.getElementById('buy-form-section').classList.remove('d-none');
+        });
+      });
+    } catch { document.getElementById('packages-list').innerHTML = '<p class="text-danger text-center">Failed to load packages.</p>'; }
+  }
+
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── Pay via M-Pesa ────────────────────────────────────────────────────────
+  document.getElementById('btn-pay-mpesa').addEventListener('click', async () => {
+    const t     = i18n[lang] || i18n.en;
+    const phone = document.getElementById('buy-phone').value.trim();
+    const alertEl = document.getElementById('buy-alert');
+    alertEl.className = 'alert d-none mb-3';
+
+    if (!selectedProfile) { alertEl.className = 'alert alert-warning mb-3'; alertEl.textContent = t.err_select; return; }
+    if (!phone)            { alertEl.className = 'alert alert-warning mb-3'; alertEl.textContent = t.err_phone; return; }
+
+    document.getElementById('btn-pay-mpesa').disabled = true;
+    document.getElementById('buy-pending').classList.remove('d-none');
+
+    try {
+      const res  = await fetch('/api/payments/mpesa/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, amount: parseFloat(selectedProfile.price), profile_id: parseInt(selectedProfile.id) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alertEl.className = 'alert alert-success mb-3';
+        alertEl.textContent = t.stk_sent;
+        setTimeout(() => document.getElementById('buy-pending').classList.add('d-none'), 15000);
+      } else {
+        document.getElementById('buy-pending').classList.add('d-none');
+        alertEl.className = 'alert alert-danger mb-3';
+        alertEl.textContent = data.message || t.err_net;
+      }
+    } catch {
+      document.getElementById('buy-pending').classList.add('d-none');
+      alertEl.className = 'alert alert-danger mb-3';
+      alertEl.textContent = t.err_net;
+    }
+    document.getElementById('btn-pay-mpesa').disabled = false;
+  });
+
+  // ── Check voucher status ──────────────────────────────────────────────────
+  document.getElementById('btn-check').addEventListener('click', async () => {
+    const t    = i18n[lang] || i18n.en;
+    const code = document.getElementById('check-code').value.trim();
+    const resultEl = document.getElementById('check-result');
+    resultEl.className = 'd-none';
+    if (!code) return;
+    document.getElementById('btn-check').disabled = true;
+    try {
+      const res  = await fetch('/api/hotspot/voucher/status?code=' + encodeURIComponent(code));
+      const data = await res.json();
+      resultEl.classList.remove('d-none');
+      if (data.success && data.data) {
+        const v = data.data;
+        let statusMsg, cls;
+        if (v.is_expired)     { statusMsg = t.status_expired;   cls = 'alert-warning'; }
+        else if (v.is_used)   { statusMsg = t.status_used;      cls = 'alert-danger'; }
+        else                  { statusMsg = t.status_available; cls = 'alert-success'; }
+        resultEl.className = `alert ${cls}`;
+        resultEl.innerHTML = `${statusMsg}<hr class="my-2" /><small>
+          Profile: <strong>${escHtml(v.profile_name || '–')}</strong> &nbsp;|&nbsp;
+          ${v.expires_at ? 'Expires: <strong>' + new Date(v.expires_at).toLocaleString() + '</strong>' : ''}
+        </small>`;
+      } else {
+        resultEl.className = 'alert alert-warning';
+        resultEl.textContent = t.status_unknown;
+      }
+    } catch {
+      resultEl.className = 'alert alert-danger';
+      resultEl.textContent = t.err_net;
+    }
+    document.getElementById('btn-check').disabled = false;
+  });
+
+  loadPackages();
+</script>
+</body>
+</html>

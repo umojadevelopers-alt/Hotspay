@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customers – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <a href="/" class="sidebar-brand"><div class="brand-icon">H</div><span class="brand-text">Hotspay</span></a>
+  <div class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a href="/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/customers.html" class="nav-link active"><i class="bi bi-people"></i> Customers</a>
+    <a href="/vouchers.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Vouchers</a>
+    <a href="/payments.html" class="nav-link"><i class="bi bi-credit-card"></i> Payments</a>
+    <span class="nav-section-label">Network</span>
+    <a href="/routers.html" class="nav-link"><i class="bi bi-router"></i> Routers</a>
+    <a href="/vouchers.html#profiles" class="nav-link"><i class="bi bi-layers"></i> Profiles</a>
+    <span class="nav-section-label">Analytics</span>
+    <a href="/reports.html" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link" id="nav-settings"><i class="bi bi-gear"></i> Settings</a>
+    <a href="#" class="nav-link text-danger" id="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <!-- Topbar -->
+  <div class="topbar">
+    <button class="btn-icon d-md-none" id="sidebar-toggle"><i class="bi bi-list"></i></button>
+    <span class="topbar-title">Customers</span>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <select class="form-select form-select-sm" id="lang-select" style="width:auto;"><option value="en">EN</option><option value="sw">SW</option><option value="fr">FR</option></select>
+      <button class="btn-icon" id="theme-toggle"><i class="bi bi-moon"></i></button>
+      <div class="user-avatar" id="user-avatar">A</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="page-content">
+    <div class="page-header">
+      <h4><i class="bi bi-people me-2 text-accent"></i>Customers</h4>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal"><i class="bi bi-plus-lg me-1"></i>Add Customer</button>
+    </div>
+
+    <!-- Search bar -->
+    <div class="card mb-3">
+      <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-5">
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="search" class="form-control border-start-0" id="search-input" placeholder="Search by name, phone or email…" />
+            </div>
+          </div>
+          <div class="col-auto ms-auto">
+            <span class="text-muted small" id="count-label">–</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="customers-tbody"><tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Add Customer</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div id="add-alert" class="alert d-none"></div>
+        <form id="add-form" novalidate>
+          <div class="mb-3"><label class="form-label fw-semibold">Name <span class="text-danger">*</span></label><input type="text" class="form-control" id="add-name" required /></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Phone</label><input type="tel" class="form-control" id="add-phone" placeholder="+254700000000" /></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Email</label><input type="email" class="form-control" id="add-email" /></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-add-customer">Save Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Customer Modal -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Edit Customer</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div id="edit-alert" class="alert d-none"></div>
+        <form id="edit-form" novalidate>
+          <input type="hidden" id="edit-id" />
+          <div class="mb-3"><label class="form-label fw-semibold">Name <span class="text-danger">*</span></label><input type="text" class="form-control" id="edit-name" required /></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Phone</label><input type="tel" class="form-control" id="edit-phone" /></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Email</label><input type="email" class="form-control" id="edit-email" /></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-save-edit">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Sessions Modal -->
+<div class="modal fade" id="sessionsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Customer Sessions</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>Username</th><th>IP</th><th>Uptime</th><th>Login</th><th>Logout</th></tr></thead>
+            <tbody id="sessions-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0"><h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Delete?</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">Are you sure you want to delete <strong id="delete-name"></strong>? This cannot be undone.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = '/login';
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  if (storedUser.name) document.getElementById('user-avatar').textContent = storedUser.name.charAt(0).toUpperCase();
+
+  document.getElementById('nav-logout').addEventListener('click', e => { e.preventDefault(); localStorage.clear(); window.location.href = '/login'; });
+  document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+  const themeBtn = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.querySelector('i').className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    themeBtn.querySelector('i').className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  });
+
+  const langSel = document.getElementById('lang-select');
+  langSel.value = localStorage.getItem('lang') || 'en';
+  langSel.addEventListener('change', () => localStorage.setItem('lang', langSel.value));
+
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast-msg toast-${type}`;
+    el.textContent = msg;
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  let allCustomers = [];
+
+  async function loadCustomers() {
+    try {
+      const res = await fetch('/api/customers', { headers });
+      if (res.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+      const data = await res.json();
+      allCustomers = data.success ? (data.data.customers || data.data || []) : [];
+      renderCustomers(allCustomers);
+    } catch { showToast('Failed to load customers', 'error'); }
+  }
+
+  function renderCustomers(list) {
+    document.getElementById('count-label').textContent = list.length + ' customer(s)';
+    const tbody = document.getElementById('customers-tbody');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No customers found</td></tr>'; return; }
+    tbody.innerHTML = list.map((c, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${escHtml(c.name)}</strong></td>
+        <td>${escHtml(c.phone || '–')}</td>
+        <td>${escHtml(c.email || '–')}</td>
+        <td>${new Date(c.created_at).toLocaleDateString()}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary me-1" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-info me-1" onclick="viewSessions(${c.id})"><i class="bi bi-clock-history"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="openDelete(${c.id},'${escHtml(c.name)}')"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // Search
+  document.getElementById('search-input').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    renderCustomers(allCustomers.filter(c =>
+      (c.name||'').toLowerCase().includes(q) ||
+      (c.phone||'').toLowerCase().includes(q) ||
+      (c.email||'').toLowerCase().includes(q)
+    ));
+  });
+
+  // Add Customer
+  document.getElementById('btn-add-customer').addEventListener('click', async () => {
+    const name  = document.getElementById('add-name').value.trim();
+    const phone = document.getElementById('add-phone').value.trim();
+    const email = document.getElementById('add-email').value.trim();
+    const alert = document.getElementById('add-alert');
+    if (!name) { alert.className = 'alert alert-danger'; alert.textContent = 'Name is required.'; return; }
+    try {
+      const res = await fetch('/api/customers', { method: 'POST', headers, body: JSON.stringify({ name, phone, email }) });
+      const data = await res.json();
+      if (data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
+        document.getElementById('add-form').reset();
+        alert.className = 'alert d-none';
+        showToast('Customer added successfully', 'success');
+        loadCustomers();
+      } else {
+        alert.className = 'alert alert-danger'; alert.textContent = data.message || 'Error adding customer.';
+      }
+    } catch { alert.className = 'alert alert-danger'; alert.textContent = 'Network error.'; }
+  });
+
+  // Edit
+  async function openEdit(id) {
+    const c = allCustomers.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('edit-id').value = c.id;
+    document.getElementById('edit-name').value  = c.name  || '';
+    document.getElementById('edit-phone').value = c.phone || '';
+    document.getElementById('edit-email').value = c.email || '';
+    document.getElementById('edit-alert').className = 'alert d-none';
+    new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
+  }
+
+  document.getElementById('btn-save-edit').addEventListener('click', async () => {
+    const id    = document.getElementById('edit-id').value;
+    const name  = document.getElementById('edit-name').value.trim();
+    const phone = document.getElementById('edit-phone').value.trim();
+    const email = document.getElementById('edit-email').value.trim();
+    const alert = document.getElementById('edit-alert');
+    if (!name) { alert.className = 'alert alert-danger'; alert.textContent = 'Name is required.'; return; }
+    try {
+      const res  = await fetch(`/api/customers/${id}`, { method: 'PUT', headers, body: JSON.stringify({ name, phone, email }) });
+      const data = await res.json();
+      if (data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
+        showToast('Customer updated', 'success');
+        loadCustomers();
+      } else { alert.className = 'alert alert-danger'; alert.textContent = data.message; }
+    } catch { alert.className = 'alert alert-danger'; alert.textContent = 'Network error.'; }
+  });
+
+  // Sessions
+  async function viewSessions(id) {
+    const tbody = document.getElementById('sessions-tbody');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+    new bootstrap.Modal(document.getElementById('sessionsModal')).show();
+    try {
+      const res  = await fetch(`/api/customers/${id}/sessions`, { headers });
+      const data = await res.json();
+      const rows = data.success ? (data.data.sessions || data.data || []) : [];
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No sessions found</td></tr>'; return; }
+      tbody.innerHTML = rows.map(s => `
+        <tr>
+          <td>${escHtml(s.username||'–')}</td>
+          <td>${escHtml(s.ip_address||'–')}</td>
+          <td>${escHtml(s.uptime||'–')}</td>
+          <td>${s.login_at ? new Date(s.login_at).toLocaleString() : '–'}</td>
+          <td>${s.logout_at ? new Date(s.logout_at).toLocaleString() : '<span class="badge bg-success">Online</span>'}</td>
+        </tr>`).join('');
+    } catch { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Failed to load sessions</td></tr>'; }
+  }
+
+  // Delete
+  let deleteId = null;
+  function openDelete(id, name) {
+    deleteId = id;
+    document.getElementById('delete-name').textContent = name;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+  }
+
+  document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+    if (!deleteId) return;
+    try {
+      const res  = await fetch(`/api/customers/${deleteId}`, { method: 'DELETE', headers });
+      const data = await res.json();
+      bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+      if (data.success) { showToast('Customer deleted', 'success'); loadCustomers(); }
+      else showToast(data.message || 'Delete failed', 'error');
+    } catch { showToast('Network error', 'error'); }
+  });
+
+  loadCustomers();
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <a href="/" class="sidebar-brand"><div class="brand-icon">H</div><span class="brand-text">Hotspay</span></a>
+  <div class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a href="/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+    <a href="/vouchers.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Vouchers</a>
+    <a href="/payments.html" class="nav-link"><i class="bi bi-credit-card"></i> Payments</a>
+    <span class="nav-section-label">Network</span>
+    <a href="/routers.html" class="nav-link"><i class="bi bi-router"></i> Routers</a>
+    <a href="/vouchers.html#profiles" class="nav-link"><i class="bi bi-layers"></i> Profiles</a>
+    <span class="nav-section-label">Analytics</span>
+    <a href="/reports.html" class="nav-link active"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link" id="nav-settings"><i class="bi bi-gear"></i> Settings</a>
+    <a href="#" class="nav-link text-danger" id="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="topbar">
+    <button class="btn-icon d-md-none" id="sidebar-toggle"><i class="bi bi-list"></i></button>
+    <span class="topbar-title">Reports & Analytics</span>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <select class="form-select form-select-sm" id="lang-select" style="width:auto;"><option value="en">EN</option><option value="sw">SW</option><option value="fr">FR</option></select>
+      <button class="btn-icon" id="theme-toggle"><i class="bi bi-moon"></i></button>
+      <div class="user-avatar" id="user-avatar">A</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <h4><i class="bi bi-bar-chart-line me-2 text-accent"></i>Reports & Analytics</h4>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-danger btn-sm" id="btn-pdf"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
+        <button class="btn btn-outline-success btn-sm" id="btn-excel"><i class="bi bi-file-earmark-excel me-1"></i>Excel</button>
+        <button class="btn btn-outline-secondary btn-sm" id="btn-csv"><i class="bi bi-filetype-csv me-1"></i>CSV</button>
+      </div>
+    </div>
+
+    <!-- Date range -->
+    <div class="card mb-4">
+      <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+          <div class="col-auto"><label class="form-label mb-0 fw-semibold">From</label></div>
+          <div class="col-md-2"><input type="date" class="form-control form-control-sm" id="date-from" /></div>
+          <div class="col-auto"><label class="form-label mb-0 fw-semibold">To</label></div>
+          <div class="col-md-2"><input type="date" class="form-control form-control-sm" id="date-to" /></div>
+          <div class="col-auto"><button class="btn btn-primary btn-sm" id="btn-apply-range"><i class="bi bi-funnel me-1"></i>Apply</button></div>
+          <div class="col-auto"><button class="btn btn-outline-secondary btn-sm" id="btn-reset-range">Reset</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue chart -->
+    <div class="card mb-4">
+      <div class="card-header">Revenue Overview <span class="badge bg-primary ms-2" id="revenue-badge">–</span></div>
+      <div class="card-body"><canvas id="revenueChart" height="80"></canvas></div>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="bi bi-receipt"></i></div>
+          <div class="stat-info"><h6>Transactions</h6><h3 id="stat-tx">–</h3></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="bi bi-ticket-perforated"></i></div>
+          <div class="stat-info"><h6>Vouchers Sold</h6><h3 id="stat-vouchers">–</h3></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="bi bi-clock-history"></i></div>
+          <div class="stat-info"><h6>Total Sessions</h6><h3 id="stat-sessions">–</h3></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="bi bi-hdd-network"></i></div>
+          <div class="stat-info"><h6>Data Used</h6><h3 id="stat-data">–</h3></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session history & Bandwidth -->
+    <div class="row g-3">
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">Session History</div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead><tr><th>User</th><th>IP</th><th>Uptime</th><th>Login</th><th>Logout</th></tr></thead>
+                <tbody id="sessions-tbody"><tr><td colspan="5" class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">Bandwidth Usage</div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead><tr><th>User</th><th>Download</th><th>Upload</th><th>Total</th></tr></thead>
+                <tbody id="bandwidth-tbody"><tr><td colspan="4" class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = '/login';
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  if (storedUser.name) document.getElementById('user-avatar').textContent = storedUser.name.charAt(0).toUpperCase();
+
+  document.getElementById('nav-logout').addEventListener('click', e => { e.preventDefault(); localStorage.clear(); window.location.href = '/login'; });
+  document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+  const themeBtn = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.querySelector('i').className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    themeBtn.querySelector('i').className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  });
+  const langSel = document.getElementById('lang-select');
+  langSel.value = localStorage.getItem('lang') || 'en';
+  langSel.addEventListener('change', () => localStorage.setItem('lang', langSel.value));
+
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div'); el.className = `toast-msg toast-${type}`; el.textContent = msg; c.appendChild(el); setTimeout(() => el.remove(), 3500);
+  }
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtBytes(b) { if (b >= 1073741824) return (b/1073741824).toFixed(2)+' GB'; if (b >= 1048576) return (b/1048576).toFixed(2)+' MB'; if (b >= 1024) return (b/1024).toFixed(2)+' KB'; return b+' B'; }
+
+  // Default date range: last 30 days
+  const today = new Date();
+  const past30 = new Date(); past30.setDate(today.getDate() - 30);
+  document.getElementById('date-to').value   = today.toISOString().slice(0,10);
+  document.getElementById('date-from').value = past30.toISOString().slice(0,10);
+
+  function getRange() {
+    return { from: document.getElementById('date-from').value, to: document.getElementById('date-to').value };
+  }
+
+  let revenueChart;
+
+  async function loadRevenue() {
+    const { from, to } = getRange();
+    try {
+      const res  = await fetch(`/api/reports/revenue?from=${from}&to=${to}`, { headers });
+      if (res.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+      const data = await res.json();
+      const rows = data.success ? (data.data.rows || []) : [];
+      const total = rows.reduce((s, r) => s + parseFloat(r.total||0), 0);
+      document.getElementById('revenue-badge').textContent = 'KES ' + total.toLocaleString();
+      document.getElementById('stat-tx').textContent = rows.reduce((s, r) => s + parseInt(r.count||0), 0);
+
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+      if (revenueChart) revenueChart.destroy();
+      revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: rows.map(r => r.date),
+          datasets: [{
+            label: 'Revenue (KES)',
+            data: rows.map(r => parseFloat(r.total||0)),
+            borderColor: '#4f8ef7',
+            backgroundColor: 'rgba(79,142,247,.12)',
+            fill: true, tension: 0.4, pointRadius: 3
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    } catch { showToast('Failed to load revenue', 'error'); }
+  }
+
+  async function loadSessions() {
+    const { from, to } = getRange();
+    try {
+      const res  = await fetch(`/api/reports/sessions?from=${from}&to=${to}`, { headers });
+      const data = await res.json();
+      const rows = data.success ? (data.data.sessions || data.data || []) : [];
+      document.getElementById('stat-sessions').textContent = rows.length;
+      const tbody = document.getElementById('sessions-tbody');
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No sessions</td></tr>'; return; }
+      tbody.innerHTML = rows.slice(0, 50).map(s => `
+        <tr>
+          <td><code>${escHtml(s.username||'–')}</code></td>
+          <td><small>${escHtml(s.ip_address||'–')}</small></td>
+          <td>${escHtml(s.uptime||'–')}</td>
+          <td>${s.login_at ? new Date(s.login_at).toLocaleString() : '–'}</td>
+          <td>${s.logout_at ? new Date(s.logout_at).toLocaleString() : '<span class="badge bg-success">Online</span>'}</td>
+        </tr>`).join('');
+    } catch { showToast('Failed to load sessions', 'error'); }
+  }
+
+  async function loadBandwidth() {
+    const { from, to } = getRange();
+    try {
+      const res  = await fetch(`/api/reports/bandwidth?from=${from}&to=${to}`, { headers });
+      const data = await res.json();
+      const rows = data.success ? (data.data.bandwidth || data.data || []) : [];
+      let totalData = 0;
+      const tbody = document.getElementById('bandwidth-tbody');
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>'; return; }
+      tbody.innerHTML = rows.slice(0, 50).map(r => {
+        const total = (parseInt(r.bytes_in||0) + parseInt(r.bytes_out||0));
+        totalData += total;
+        return `<tr>
+          <td><code>${escHtml(r.username||'–')}</code></td>
+          <td>${fmtBytes(parseInt(r.bytes_in||0))}</td>
+          <td>${fmtBytes(parseInt(r.bytes_out||0))}</td>
+          <td>${fmtBytes(total)}</td>
+        </tr>`;
+      }).join('');
+      document.getElementById('stat-data').textContent = fmtBytes(totalData);
+    } catch { showToast('Failed to load bandwidth', 'error'); }
+  }
+
+  async function loadVoucherStats() {
+    try {
+      const res  = await fetch('/api/vouchers?status=used', { headers });
+      const data = await res.json();
+      const rows = data.success ? (data.data.vouchers || data.data || []) : [];
+      document.getElementById('stat-vouchers').textContent = rows.length;
+    } catch {}
+  }
+
+  function loadAll() { loadRevenue(); loadSessions(); loadBandwidth(); loadVoucherStats(); }
+
+  document.getElementById('btn-apply-range').addEventListener('click', loadAll);
+  document.getElementById('btn-reset-range').addEventListener('click', () => {
+    document.getElementById('date-to').value   = today.toISOString().slice(0,10);
+    document.getElementById('date-from').value = past30.toISOString().slice(0,10);
+    loadAll();
+  });
+
+  // Export buttons
+  document.getElementById('btn-pdf').addEventListener('click', () => {
+    const { from, to } = getRange();
+    window.open(`/api/reports/export/pdf?from=${from}&to=${to}`, '_blank');
+  });
+  document.getElementById('btn-excel').addEventListener('click', () => {
+    const { from, to } = getRange();
+    window.open(`/api/reports/export/excel?from=${from}&to=${to}`, '_blank');
+  });
+  document.getElementById('btn-csv').addEventListener('click', () => {
+    const { from, to } = getRange();
+    window.open(`/api/reports/export/csv?from=${from}&to=${to}`, '_blank');
+  });
+
+  loadAll();
+</script>
+</body>
+</html>
