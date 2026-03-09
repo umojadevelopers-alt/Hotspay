@@ -1,13 +1,30 @@
 'use strict';
 
-const AfricasTalking = require('africastalking');
-
 /** Lazily initialised Africa's Talking client. */
 let _client = null;
 let _sms = null;
+let _providerLoaded = false;
+let _providerFactory = null;
+
+function getProviderFactory() {
+  if (!_providerLoaded) {
+    _providerLoaded = true;
+    try {
+      _providerFactory = require('africastalking');
+    } catch (err) {
+      _providerFactory = null;
+    }
+  }
+  return _providerFactory;
+}
 
 function getClient() {
   if (!_client) {
+    const AfricasTalking = getProviderFactory();
+    if (!AfricasTalking) {
+      throw new Error("SMS provider not installed. Install 'africastalking' package to enable SMS.");
+    }
+
     _client = AfricasTalking({
       apiKey: process.env.AT_API_KEY || '',
       username: process.env.AT_USERNAME || 'sandbox',
