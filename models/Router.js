@@ -25,14 +25,14 @@ const Router = {
   /**
    * Create a new router record.
    * The api_password is Base64-encoded before storage.
-   * @param {Object} data - { name, host, port, api_user, api_password, is_active }
+   * @param {Object} data - { name, host, api_port, api_user, api_password, is_active }
    * @returns {Promise<Object>}
    */
   async create(data) {
     const {
       name,
       host,
-      port = 8728,
+      api_port = 8728,
       api_user,
       api_password,
       is_active = true,
@@ -44,9 +44,9 @@ const Router = {
 
     const [result] = await query(
       `INSERT INTO routers
-         (name, host, port, api_user, api_password, is_active, ssid, location, created_at, updated_at)
+         (name, host, api_port, api_user, api_password, is_active, ssid, location, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [name, host, port, api_user, encodedPassword, is_active ? 1 : 0, ssid, location]
+      [name, host, api_port, api_user, encodedPassword, is_active ? 1 : 0, ssid, location]
     );
 
     return this.findById(result.insertId);
@@ -81,7 +81,7 @@ const Router = {
       fields.api_password = encode(fields.api_password);
     }
 
-    const allowed = ['name', 'host', 'port', 'api_user', 'api_password', 'is_active', 'ssid', 'location'];
+    const allowed = ['name', 'host', 'api_port', 'api_user', 'api_password', 'is_active', 'ssid', 'location'];
     const keys = Object.keys(fields).filter((k) => allowed.includes(k));
 
     if (keys.length === 0) return this.findById(id);

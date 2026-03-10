@@ -170,14 +170,8 @@ const Voucher = {
     const offset = parseInt(filters.offset) || 0;
 
     const [rows] = await query(
-      `SELECT v.*, p.name AS profile_name, r.name AS router_name
-       FROM vouchers v
-       LEFT JOIN profiles p ON v.profile_id = p.id
-       LEFT JOIN routers r ON v.router_id = r.id
-       ${where}
-       ORDER BY v.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+      `SELECT v.*, p.name AS profile_name, r.name AS router_name FROM vouchers v LEFT JOIN profiles p ON v.profile_id = p.id LEFT JOIN routers r ON v.router_id = r.id ${where} ORDER BY v.created_at DESC LIMIT ${offset}, ${limit}`,
+      params
     );
 
     return rows;

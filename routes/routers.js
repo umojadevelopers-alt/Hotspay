@@ -23,7 +23,7 @@ router.get('/', authenticate, requireRole('viewer'), async (req, res) => {
 // POST /api/routers - super_admin only
 router.post('/', authenticate, requireRole('super_admin'), async (req, res) => {
   try {
-    const { name, host, port, api_user, api_password, is_active, ssid, location } = req.body;
+    const { name, host, api_port, api_user, api_password, is_active, ssid, location } = req.body;
     if (!name || !host || !api_user || !api_password) {
       return res.status(400).json({
         success: false,
@@ -31,7 +31,7 @@ router.post('/', authenticate, requireRole('super_admin'), async (req, res) => {
       });
     }
 
-    const created = await Router.create({ name, host, port, api_user, api_password, is_active, ssid, location });
+    const created = await Router.create({ name, host, api_port, api_user, api_password, is_active, ssid, location });
     const { api_password: _p, ...routerInfo } = created;
     return res.status(201).json({ success: true, message: 'Router created', data: { router: routerInfo } });
   } catch (err) {
@@ -66,11 +66,11 @@ router.put('/:id', authenticate, requireRole('super_admin'), async (req, res) =>
     const existing = await Router.findById(id);
     if (!existing) return res.status(404).json({ success: false, message: 'Router not found' });
 
-    const { name, host, port, api_user, api_password, is_active, ssid, location } = req.body;
+    const { name, host, api_port, api_user, api_password, is_active, ssid, location } = req.body;
     const data = {};
     if (name !== undefined) data.name = name;
     if (host !== undefined) data.host = host;
-    if (port !== undefined) data.port = parseInt(port);
+    if (api_port !== undefined) data.api_port = parseInt(api_port);
     if (api_user !== undefined) data.api_user = api_user;
     if (api_password !== undefined) data.api_password = api_password;
     if (is_active !== undefined) data.is_active = is_active;
