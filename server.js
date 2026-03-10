@@ -52,6 +52,7 @@ const app = express();
 
 // Security middleware
 app.use(helmet({
+  hsts: false, // Disable HSTS during development (no HTTPS yet)
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
