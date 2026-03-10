@@ -22,7 +22,7 @@ router.get('/', authenticate, requireRole('viewer'), async (req, res) => {
 // POST /api/profiles
 router.post('/', authenticate, requireRole('cashier'), async (req, res) => {
   try {
-    const { name, router_id, rate_limit, session_timeout, shared_users, price, description } = req.body;
+    const { name, router_id, display_name, duration, data_limit, speed_up, speed_down, price } = req.body;
     if (!name || !router_id) {
       return res.status(400).json({ success: false, message: 'name and router_id are required' });
     }
@@ -30,11 +30,12 @@ router.post('/', authenticate, requireRole('cashier'), async (req, res) => {
     const profile = await Profile.create({
       name,
       router_id: parseInt(router_id),
-      rate_limit,
-      session_timeout,
-      shared_users: shared_users !== undefined ? parseInt(shared_users) : 1,
+      display_name,
+      duration,
+      data_limit,
+      speed_up,
+      speed_down,
       price: price !== undefined ? parseFloat(price) : 0,
-      description,
     });
 
     return res.status(201).json({ success: true, message: 'Profile created', data: { profile } });
@@ -69,15 +70,16 @@ router.put('/:id', authenticate, requireRole('cashier'), async (req, res) => {
     const existing = await Profile.findById(id);
     if (!existing) return res.status(404).json({ success: false, message: 'Profile not found' });
 
-    const { name, router_id, rate_limit, session_timeout, shared_users, price, description } = req.body;
+    const { name, router_id, display_name, duration, data_limit, speed_up, speed_down, price } = req.body;
     const data = {};
     if (name !== undefined) data.name = name;
     if (router_id !== undefined) data.router_id = parseInt(router_id);
-    if (rate_limit !== undefined) data.rate_limit = rate_limit;
-    if (session_timeout !== undefined) data.session_timeout = session_timeout;
-    if (shared_users !== undefined) data.shared_users = parseInt(shared_users);
+    if (display_name !== undefined) data.display_name = display_name;
+    if (duration !== undefined) data.duration = duration;
+    if (data_limit !== undefined) data.data_limit = data_limit;
+    if (speed_up !== undefined) data.speed_up = speed_up;
+    if (speed_down !== undefined) data.speed_down = speed_down;
     if (price !== undefined) data.price = parseFloat(price);
-    if (description !== undefined) data.description = description;
 
     const updated = await Profile.update(id, data);
     return res.json({ success: true, message: 'Profile updated', data: { profile: updated } });

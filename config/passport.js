@@ -24,7 +24,7 @@ module.exports = function configurePassport(passport) {
     new JwtStrategy(options, async (payload, done) => {
       try {
         const [rows] = await query(
-          'SELECT id, username, email, role, is_active FROM users WHERE id = ? LIMIT 1',
+          'SELECT id, name, email, role, is_active FROM admin_users WHERE id = ? LIMIT 1',
           [payload.id]
         );
 

@@ -13,7 +13,7 @@ const User = {
    */
   async findByEmail(email) {
     const [rows] = await query(
-      'SELECT * FROM users WHERE email = ? LIMIT 1',
+      'SELECT * FROM admin_users WHERE email = ? LIMIT 1',
       [email]
     );
     return rows[0] || null;
@@ -26,7 +26,7 @@ const User = {
    */
   async findById(id) {
     const [rows] = await query(
-      'SELECT * FROM users WHERE id = ? LIMIT 1',
+      'SELECT * FROM admin_users WHERE id = ? LIMIT 1',
       [id]
     );
     return rows[0] || null;
@@ -43,7 +43,7 @@ const User = {
     const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     const [result] = await query(
-      'INSERT INTO users (name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
+      'INSERT INTO admin_users (name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
       [name, email, hashed, role]
     );
 
@@ -73,7 +73,7 @@ const User = {
     const values = keys.map((k) => fields[k]);
 
     await query(
-      `UPDATE users SET ${setClauses}, updated_at = NOW() WHERE id = ?`,
+      `UPDATE admin_users SET ${setClauses}, updated_at = NOW() WHERE id = ?`,
       [...values, id]
     );
 
@@ -86,7 +86,7 @@ const User = {
    * @returns {Promise<boolean>}
    */
   async delete(id) {
-    const [result] = await query('DELETE FROM users WHERE id = ?', [id]);
+    const [result] = await query('DELETE FROM admin_users WHERE id = ?', [id]);
     return result.affectedRows > 0;
   },
 
@@ -118,7 +118,7 @@ const User = {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const [rows] = await query(
-      `SELECT id, name, email, role, is_active, created_at, updated_at FROM users ${where} ORDER BY created_at DESC`,
+      `SELECT id, name, email, role, is_active, created_at, updated_at FROM admin_users ${where} ORDER BY created_at DESC`,
       params
     );
 

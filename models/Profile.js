@@ -5,25 +5,26 @@ const { query } = require('../config/database');
 const Profile = {
   /**
    * Create a hotspot profile.
-   * @param {Object} data - { name, router_id, rate_limit, session_timeout, shared_users, price, description }
+   * @param {Object} data - { name, router_id, display_name, duration, data_limit, speed_up, speed_down, price }
    * @returns {Promise<Object>}
    */
   async create(data) {
     const {
       name,
       router_id,
-      rate_limit = null,
-      session_timeout = null,
-      shared_users = 1,
+      display_name = null,
+      duration = null,
+      data_limit = null,
+      speed_up = null,
+      speed_down = null,
       price = 0,
-      description = null,
     } = data;
 
     const [result] = await query(
       `INSERT INTO profiles
-         (name, router_id, rate_limit, session_timeout, shared_users, price, description, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [name, router_id, rate_limit, session_timeout, shared_users, price, description]
+         (name, router_id, display_name, duration, data_limit, speed_up, speed_down, price, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [name, router_id, display_name, duration, data_limit, speed_up, speed_down, price]
     );
 
     return this.findById(result.insertId);
@@ -53,8 +54,8 @@ const Profile = {
    */
   async update(id, data) {
     const allowed = [
-      'name', 'router_id', 'rate_limit', 'session_timeout',
-      'shared_users', 'price', 'description',
+      'name', 'router_id', 'display_name', 'duration',
+      'data_limit', 'speed_up', 'speed_down', 'price',
     ];
     const keys = Object.keys(data).filter((k) => allowed.includes(k));
 
