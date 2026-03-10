@@ -63,8 +63,7 @@ app.use(helmet({
       connectSrc: ["'self'", 'http:', 'https:'],
       fontSrc: ["'self'", 'https://cdn.jsdelivr.net'],
       objectSrc: ["'none'"],
-      // Removed upgradeInsecureRequests to allow HTTP during development
-      // Re-enable after setting up HTTPS
+      upgradeInsecureRequests: [], // Explicitly disable to allow HTTP
     }
   }
 }));
