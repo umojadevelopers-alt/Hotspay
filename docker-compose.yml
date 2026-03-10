@@ -53,6 +53,7 @@ services:
     volumes:
       - app_uploads:/app/uploads
       - app_logs:/app/logs
+      - ./public:/app/public
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/login"]
       interval: 30s

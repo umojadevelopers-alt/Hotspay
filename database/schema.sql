@@ -107,3 +107,33 @@ CREATE TABLE IF NOT EXISTS session_logs (
     logout_at TIMESTAMP NULL,
     FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE SET NULL
 );
+
+-- WireGuard Server Config
+CREATE TABLE IF NOT EXISTS wireguard_server (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    server_endpoint VARCHAR(100) NOT NULL,
+    server_port INT DEFAULT 51820,
+    private_key VARCHAR(100),
+    public_key VARCHAR(100),
+    network_address VARCHAR(50) DEFAULT '10.10.10.0/24',
+    server_ip VARCHAR(50) DEFAULT '10.10.10.1',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- WireGuard Peers (Routers)
+CREATE TABLE IF NOT EXISTS wireguard_peers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    router_id INT,
+    peer_name VARCHAR(100) NOT NULL,
+    public_key VARCHAR(100),
+    wireguard_ip VARCHAR(50) NOT NULL,
+    lan_network VARCHAR(50),
+    listen_port INT DEFAULT 13231,
+    status ENUM('pending', 'connected', 'disconnected') DEFAULT 'pending',
+    last_handshake TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE SET NULL
+);

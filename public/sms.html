@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMS Management – Hotspay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<nav class="sidebar" id="sidebar">
+  <a href="/" class="sidebar-brand"><div class="brand-icon">H</div><span class="brand-text">Hotspay</span></a>
+  <div class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a href="/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+    <a href="/vouchers.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Vouchers</a>
+    <a href="/payments.html" class="nav-link"><i class="bi bi-credit-card"></i> Payments</a>
+    <span class="nav-section-label">Network</span>
+    <a href="/routers.html" class="nav-link"><i class="bi bi-router"></i> Routers</a>
+    <a href="/profiles.html" class="nav-link"><i class="bi bi-layers"></i> Profiles</a>
+    <a href="/wireguard.html" class="nav-link"><i class="bi bi-shield-lock"></i> WireGuard</a>
+    <span class="nav-section-label">Analytics</span>
+    <a href="/reports.html" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <span class="nav-section-label">Account</span>
+    <a href="/settings.html" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+    <a href="#" class="nav-link text-danger" id="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    <span class="nav-section-label">Tools</span>
+    <a href="/sms.html" class="nav-link active"><i class="bi bi-chat-dots"></i> SMS</a>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="topbar">
+    <button class="btn-icon d-md-none" id="sidebar-toggle"><i class="bi bi-list"></i></button>
+    <span class="topbar-title">SMS Management</span>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <select class="form-select form-select-sm" id="lang-select" style="width:auto;"><option value="en">EN</option><option value="sw">SW</option><option value="fr">FR</option></select>
+      <button class="btn-icon" id="theme-toggle"><i class="bi bi-moon"></i></button>
+      <div class="user-avatar" id="user-avatar">A</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <h4><i class="bi bi-chat-dots me-2 text-accent"></i>SMS Management</h4>
+      <div class="d-flex gap-2">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sendSmsModal"><i class="bi bi-send me-1"></i>Send SMS</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bulkSmsModal"><i class="bi bi-people-fill me-1"></i>Bulk SMS</button>
+        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#voucherSmsModal"><i class="bi bi-ticket-perforated me-1"></i>Send Voucher SMS</button>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>SMS Info</h6></div>
+      <div class="card-body">
+        <ul>
+          <li>Only super_admin can send bulk or single SMS.</li>
+          <li>Cashiers can send voucher SMS.</li>
+          <li>All SMS actions are logged.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Send SMS Modal -->
+<div class="modal fade" id="sendSmsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Send SMS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="sms-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label">Phone Number</label>
+          <input type="text" class="form-control" id="sms-phone" placeholder="+254712345678" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" id="sms-message" rows="4" placeholder="Type your message..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" id="btn-send-sms">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk SMS Modal -->
+<div class="modal fade" id="bulkSmsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk SMS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="bulk-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label">Phone Numbers (comma separated)</label>
+          <input type="text" class="form-control" id="bulk-phones" placeholder="+254712345678, +254798765432" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" id="bulk-message" rows="4" placeholder="Type your message..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-send-bulk">Send Bulk</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Voucher SMS Modal -->
+<div class="modal fade" id="voucherSmsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Send Voucher SMS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="voucher-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label">Voucher ID</label>
+          <input type="number" class="form-control" id="voucher-id" placeholder="Enter voucher ID" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Phone Number (optional)</label>
+          <input type="text" class="form-control" id="voucher-phone" placeholder="Leave blank to use customer phone" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-info" id="btn-send-voucher">Send Voucher SMS</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = '/login';
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  if (storedUser.name) document.getElementById('user-avatar').textContent = storedUser.name.charAt(0).toUpperCase();
+
+  document.getElementById('nav-logout').addEventListener('click', e => { e.preventDefault(); localStorage.clear(); window.location.href = '/login'; });
+  document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+  const themeBtn = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.querySelector('i').className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    themeBtn.querySelector('i').className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+  });
+
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div'); el.className = `toast-msg toast-${type}`; el.textContent = msg; c.appendChild(el); setTimeout(() => el.remove(), 3500);
+  }
+
+  // Send SMS
+  document.getElementById('btn-send-sms').addEventListener('click', async () => {
+    const phone = document.getElementById('sms-phone').value.trim();
+    const message = document.getElementById('sms-message').value.trim();
+    const alert = document.getElementById('sms-alert');
+    alert.className = 'alert d-none';
+    if (!phone || !message) {
+      alert.className = 'alert alert-danger';
+      alert.textContent = 'Phone and message are required.';
+      return;
+    }
+    try {
+      const res = await fetch('/api/sms/send', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ phone, message })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      showToast('SMS sent!', 'success');
+      alert.className = 'alert alert-success';
+      alert.textContent = 'SMS sent successfully.';
+    } catch (err) {
+      alert.className = 'alert alert-danger';
+      alert.textContent = err.message || 'Failed to send SMS.';
+    }
+  });
+
+  // Bulk SMS
+  document.getElementById('btn-send-bulk').addEventListener('click', async () => {
+    const phones = document.getElementById('bulk-phones').value.trim();
+    const message = document.getElementById('bulk-message').value.trim();
+    const alert = document.getElementById('bulk-alert');
+    alert.className = 'alert d-none';
+    if (!phones || !message) {
+      alert.className = 'alert alert-danger';
+      alert.textContent = 'Phone numbers and message are required.';
+      return;
+    }
+    const recipients = phones.split(',').map(p => p.trim()).filter(Boolean);
+    try {
+      const res = await fetch('/api/sms/bulk', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ recipients, message })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      showToast('Bulk SMS sent!', 'success');
+      alert.className = 'alert alert-success';
+      alert.textContent = `Bulk SMS sent: ${data.data.sent} succeeded, ${data.data.failed} failed.`;
+    } catch (err) {
+      alert.className = 'alert alert-danger';
+      alert.textContent = err.message || 'Failed to send bulk SMS.';
+    }
+  });
+
+  // Voucher SMS
+  document.getElementById('btn-send-voucher').addEventListener('click', async () => {
+    const voucherId = document.getElementById('voucher-id').value.trim();
+    const phone = document.getElementById('voucher-phone').value.trim();
+    const alert = document.getElementById('voucher-alert');
+    alert.className = 'alert d-none';
+    if (!voucherId) {
+      alert.className = 'alert alert-danger';
+      alert.textContent = 'Voucher ID is required.';
+      return;
+    }
+    try {
+      const res = await fetch(`/api/sms/voucher/${voucherId}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(phone ? { phone } : {})
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      showToast('Voucher SMS sent!', 'success');
+      alert.className = 'alert alert-success';
+      alert.textContent = 'Voucher SMS sent successfully.';
+    } catch (err) {
+      alert.className = 'alert alert-danger';
+      alert.textContent = err.message || 'Failed to send voucher SMS.';
+    }
+  });
+</script>
+</body>
+</html>

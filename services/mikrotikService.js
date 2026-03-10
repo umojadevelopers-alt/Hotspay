@@ -347,6 +347,52 @@ const mikrotikService = {
     return stats;
   },
 
+    /**
+     * Push WireGuard config script lines to MikroTik via API.
+     * @param {number} routerId
+     * @param {string[]} scriptLines - Array of script lines (RSC)
+     * @returns {Promise<Array>}
+     */
+    async pushWireGuardConfig(routerId, scriptLines) {
+      const { conn } = await getConnection(routerId);
+      try {
+        // Send each line as a command
+        for (const line of scriptLines) {
+          // Only send non-empty lines
+          if (line.trim()) {
+            await conn.write([line]);
+          }
+        }
+        return { success: true };
+      } catch (err) {
+        return { success: false, error: err.message };
+      } finally {
+        await conn.close();
+      }
+    },
+
+    /**
+     * Fetch WireGuard public key for a given interface.
+     * @param {number} routerId
+     * @param {string} interfaceName
+     * @returns {Promise<string|null>}
+     */
+    async getWireGuardPublicKey(routerId, interfaceName = 'wg-hotspay') {
+      const { conn } = await getConnection(routerId);
+      try {
+        const result = await conn.write([
+          '/interface/wireguard/print',
+          '?name=' + interfaceName
+        ]);
+        if (result && result.length > 0) {
+          return result[0]['public-key'] || null;
+        }
+        return null;
+      } finally {
+        await conn.close();
+      }
+    },
+
   /**
    * Test connectivity to a router by fetching system identity.
    * @param {number} routerId

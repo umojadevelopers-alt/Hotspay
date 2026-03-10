@@ -107,6 +107,8 @@ app.use('/api/reports', require('./routes/reports'));
 app.use('/api/sms', require('./routes/sms'));
 app.use('/api/profiles', require('./routes/profiles'));
 app.use('/api/wireguard', require('./routes/wireguard'));
+app.use('/api/wireguard-config', require('./routes/wireguard-config'));
+app.use('/api/wireguard-mikrotik', require('./routes/wireguard-mikrotik'));
 
 // Serve frontend pages
 app.get('/', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
