@@ -113,6 +113,7 @@ app.get('/', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'publi
 app.get('/login', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/hotspot-login', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'public', 'hotspot-login.html')));
 app.get('/self-service', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'public', 'self-service.html')));
+app.get('/promo', pageLimiter, (req, res) => res.sendFile(path.join(__dirname, 'public', 'promo.html')));
 
 // 404 handler
 app.use((req, res) => {
