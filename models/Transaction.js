@@ -138,13 +138,8 @@ const Transaction = {
     const offset = parseInt(filters.offset) || 0;
 
     const [rows] = await query(
-      `SELECT t.*, c.name AS customer_name, c.phone AS customer_phone
-       FROM transactions t
-       LEFT JOIN customers c ON t.customer_id = c.id
-       ${where}
-       ORDER BY t.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+      `SELECT t.*, c.name AS customer_name, c.phone AS customer_phone FROM transactions t LEFT JOIN customers c ON t.customer_id = c.id ${where} ORDER BY t.created_at DESC LIMIT ${offset}, ${limit}`,
+      params
     );
 
     return rows;
