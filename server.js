@@ -54,18 +54,7 @@ const app = express();
 app.use(helmet({
   hsts: false, // Disable HSTS during development (no HTTPS yet)
   crossOriginOpenerPolicy: false, // Allow non-HTTPS origins
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-      connectSrc: ["'self'", 'http:', 'https:'],
-      fontSrc: ["'self'", 'https://cdn.jsdelivr.net'],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: [], // Explicitly disable to allow HTTP
-    }
-  }
+  contentSecurityPolicy: false // Disable CSP in development to allow HTTP
 }));
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
