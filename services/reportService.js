@@ -282,26 +282,21 @@ const reportService = {
 
   /**
    * Get session logs with optional filters.
-   * @param {Object} [filters] - { customer_id, voucher_id, from_date, to_date, router_id, limit, offset }
+   * @param {Object} [filters] - { router_id, username, from_date, to_date, limit, offset }
    * @returns {Promise<Array>}
    */
   async getSessionHistory(filters = {}) {
     const conditions = [];
     const params = [];
 
-    if (filters.customer_id) {
-      conditions.push('sl.customer_id = ?');
-      params.push(filters.customer_id);
-    }
-
-    if (filters.voucher_id) {
-      conditions.push('sl.voucher_id = ?');
-      params.push(filters.voucher_id);
-    }
-
     if (filters.router_id) {
-      conditions.push('v.router_id = ?');
+      conditions.push('sl.router_id = ?');
       params.push(filters.router_id);
+    }
+
+    if (filters.username) {
+      conditions.push('sl.username = ?');
+      params.push(filters.username);
     }
 
     if (filters.from_date) {
@@ -320,12 +315,9 @@ const reportService = {
 
     const [rows] = await query(
       `SELECT sl.*,
-              c.name  AS customer_name,
-              c.phone AS customer_phone,
               r.name  AS router_name
        FROM session_logs sl
-       LEFT JOIN customers c ON sl.customer_id = c.id
-       LEFT JOIN routers   r ON sl.router_id = r.id
+       LEFT JOIN routers r ON sl.router_id = r.id
        ${where}
        ORDER BY sl.login_at DESC
        LIMIT ${offset}, ${limit}`,
