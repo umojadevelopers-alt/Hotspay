@@ -4,7 +4,51 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    restart: unless-stopped
     environment:
       NODE_ENV: production
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: hotspay
+      DB_USER: hotspay_user
+      DB_PASSWORD: hotspay_password
+      JWT_SECRET: change_this_to_a_secure_random_secret_key
+      JWT_EXPIRES_IN: 24h
     ports:
-      - 3000:3000
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - hotspay_net
+
+  mysql:
+    image: mysql:8.0
+    container_name: hotspay_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: hotspay
+      MYSQL_USER: hotspay_user
+      MYSQL_PASSWORD: hotspay_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    ports:
+      - "3307:3306"
+    networks:
+      - hotspay_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  hotspay_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
