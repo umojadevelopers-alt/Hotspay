@@ -1,33 +1,74 @@
 # -----------------------------------------------
 # MikroTik WireGuard Client Configuration
-# RouterOS v7.x
+# RouterOS v7.x+ (WireGuard requires v7+)
+# 
+# Connect your MikroTik router to Hotspay Server
+# Server: hotspay.vps.webdock.cloud (92.113.146.43)
 # -----------------------------------------------
 
-# 1. Add WireGuard Interface
+# ======= CONFIGURATION - CHANGE THESE VALUES =======
+:local wgInterfaceName "wg-hotspay"
+:local wgListenPort 13231
+:local wgClientIP "10.10.10.2/24"
+:local serverPublicKey "SERVER_PUBLIC_KEY_HERE"
+:local serverEndpoint "92.113.146.43"
+:local serverPort 51820
+:local hotspotNetwork "192.168.88.0/24"
+# ===================================================
+
+# Step 1: Generate WireGuard keys on router (run manually first to get public key)
+# /interface wireguard print
+# Copy the public-key and send to server admin
+
+# Step 2: Create WireGuard interface
 /interface wireguard
-add name=wg0 listen-port=13231 private-key="MIKROTIK_PRIVATE_KEY"
+add name=$wgInterfaceName listen-port=$wgListenPort comment="Hotspay VPN Tunnel"
 
-# 2. Assign IP to WireGuard Interface
+# Step 3: Get the generated public key (note this for server config)
+:local pubKey [/interface wireguard get $wgInterfaceName public-key]
+:put "Router Public Key: $pubKey"
+:put "Send this key to your Hotspay server admin!"
+
+# Step 4: Assign IP to WireGuard interface
 /ip address
-add address=10.0.0.2/30 interface=wg0
+add address=$wgClientIP interface=$wgInterfaceName comment="Hotspay WG IP"
 
-# 3. Add WireGuard Peer (Ubuntu Server)
+# Step 5: Add WireGuard Peer (Hotspay Server)
 /interface wireguard peers
-add interface=wg0 \
-    public-key="SERVER_PUBLIC_KEY" \
-    endpoint-address=YOUR_SERVER_PUBLIC_IP \
-    endpoint-port=51820 \
-    allowed-address=0.0.0.0/0 \
-    persistent-keepalive=25
+add interface=$wgInterfaceName \
+    public-key=$serverPublicKey \
+    endpoint-address=$serverEndpoint \
+    endpoint-port=$serverPort \
+    allowed-address=10.10.10.0/24 \
+    persistent-keepalive=25 \
+    comment="Hotspay Server"
 
-# 4. Route all hotspot traffic through the WireGuard tunnel
-/ip route
-add dst-address=0.0.0.0/0 gateway=10.0.0.1 routing-table=main distance=2
-
-# 5. NAT masquerade for hotspot clients going through wg0
-/ip firewall nat
-add chain=srcnat out-interface=wg0 action=masquerade comment="WireGuard NAT for Hotspot"
-
-# 6. Firewall: Allow WireGuard traffic on WAN
+# Step 6: Firewall - Allow WireGuard UDP traffic
 /ip firewall filter
-add chain=input in-interface=ether1 protocol=udp dst-port=13231 action=accept comment="Allow WireGuard"
+add chain=input protocol=udp dst-port=$wgListenPort action=accept \
+    comment="Allow WireGuard Hotspay" place-before=0
+
+# Step 7: NAT for hotspot clients through WireGuard (optional - only if routing all traffic)
+# /ip firewall nat
+# add chain=srcnat out-interface=$wgInterfaceName action=masquerade \
+#     comment="NAT Hotspot via Hotspay WG"
+
+# Step 8: Route management traffic to server via WireGuard
+/ip route
+add dst-address=10.10.10.1/32 gateway=$wgInterfaceName comment="Hotspay Server Route"
+
+# -----------------------------------------------
+# VERIFICATION COMMANDS (run after setup):
+# -----------------------------------------------
+# Check interface status:
+#   /interface wireguard print
+#
+# Check peer connection:
+#   /interface wireguard peers print
+#
+# Ping server:
+#   /ping 10.10.10.1
+#
+# Check handshake (should show recent timestamp):
+#   /interface wireguard peers print detail
+# -----------------------------------------------
