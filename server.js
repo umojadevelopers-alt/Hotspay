@@ -53,13 +53,14 @@ const app = express();
 // Security middleware
 app.use(helmet({
   hsts: false, // Disable HSTS during development (no HTTPS yet)
+  crossOriginOpenerPolicy: false, // Allow non-HTTPS origins
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
       imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-      connectSrc: ["'self'", 'https:'],
+      connectSrc: ["'self'", 'http:', 'https:'],
       fontSrc: ["'self'", 'https://cdn.jsdelivr.net'],
       objectSrc: ["'none'"],
       // Removed upgradeInsecureRequests to allow HTTP during development
