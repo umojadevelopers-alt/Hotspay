@@ -17,14 +17,13 @@ const Voucher = {
       amount = 0,
       expires_at = null,
       customer_id = null,
-      comment = null,
     } = data;
 
     const [result] = await query(
       `INSERT INTO vouchers
-         (username, password, profile_id, router_id, amount, expires_at, customer_id, comment, is_used, is_expired, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())`,
-      [username, password, profile_id, router_id, amount, expires_at, customer_id, comment]
+         (username, password, profile_id, router_id, amount, expires_at, customer_id, is_used, is_expired, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())`,
+      [username, password, profile_id, router_id, amount, expires_at, customer_id]
     );
 
     return this.findById(result.insertId);
@@ -39,7 +38,7 @@ const Voucher = {
     if (!vouchers || vouchers.length === 0) return 0;
 
     const placeholders = vouchers
-      .map(() => '(?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())')
+      .map(() => '(?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())')
       .join(', ');
 
     const values = vouchers.flatMap((v) => [
@@ -50,12 +49,11 @@ const Voucher = {
       v.amount || 0,
       v.expires_at || null,
       v.customer_id || null,
-      v.comment || null,
     ]);
 
     const [result] = await query(
       `INSERT INTO vouchers
-         (username, password, profile_id, router_id, amount, expires_at, customer_id, comment, is_used, is_expired, created_at, updated_at)
+         (username, password, profile_id, router_id, amount, expires_at, customer_id, is_used, is_expired, created_at, updated_at)
        VALUES ${placeholders}`,
       values
     );

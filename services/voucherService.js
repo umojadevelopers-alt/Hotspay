@@ -46,7 +46,6 @@ const voucherService = {
         profile_id: profileId,
         router_id: routerId,
         amount,
-        comment: `Batch generated – ${profile.name}`,
       });
     }
 
@@ -212,7 +211,6 @@ const voucherService = {
       username: voucher.username,
       password: voucher.password,
       profile: voucher.profile_name || '',
-      comment: voucher.comment || '',
     });
   },
 };
