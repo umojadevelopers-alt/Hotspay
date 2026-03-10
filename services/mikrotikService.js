@@ -15,7 +15,7 @@ async function connect(router) {
     host: router.host,
     user: router.api_user,
     password: router.api_password,
-    port: router.port || 8728,
+    port: router.api_port || 8728,
     timeout: parseInt(process.env.MIKROTIK_TIMEOUT) || 5000,
   });
 
