@@ -322,16 +322,14 @@ const reportService = {
       `SELECT sl.*,
               c.name  AS customer_name,
               c.phone AS customer_phone,
-              v.username,
               r.name  AS router_name
        FROM session_logs sl
        LEFT JOIN customers c ON sl.customer_id = c.id
-       LEFT JOIN vouchers  v ON sl.voucher_id  = v.id
-       LEFT JOIN routers   r ON v.router_id    = r.id
+       LEFT JOIN routers   r ON sl.router_id = r.id
        ${where}
        ORDER BY sl.login_at DESC
-       LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+       LIMIT ${offset}, ${limit}`,
+      params
     );
 
     return rows;
@@ -366,7 +364,7 @@ const reportService = {
     const offset = parseInt(filters.offset) || 0;
 
     const [rows] = await query(
-      `SELECT v.username,
+      `SELECT sl.username,
               c.name        AS customer_name,
               r.name        AS router_name,
               COUNT(sl.id)  AS session_count,
@@ -374,14 +372,13 @@ const reportService = {
               SUM(sl.bytes_out) AS total_bytes_out,
               SUM(sl.bytes_in + sl.bytes_out) AS total_bytes
        FROM session_logs sl
-       LEFT JOIN vouchers  v ON sl.voucher_id  = v.id
        LEFT JOIN customers c ON sl.customer_id = c.id
-       LEFT JOIN routers   r ON v.router_id    = r.id
+       LEFT JOIN routers   r ON sl.router_id = r.id
        ${where}
-       GROUP BY v.id, v.username, c.name, r.name
+       GROUP BY sl.username, c.name, r.name
        ORDER BY total_bytes DESC
-       LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+       LIMIT ${offset}, ${limit}`,
+      params
     );
 
     return rows;

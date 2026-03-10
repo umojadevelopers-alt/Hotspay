@@ -36,17 +36,15 @@ const Router = {
       api_user,
       api_password,
       is_active = true,
-      ssid = null,
-      location = null,
     } = data;
 
     const encodedPassword = encode(api_password);
 
     const [result] = await query(
       `INSERT INTO routers
-         (name, host, api_port, api_user, api_password, is_active, ssid, location, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [name, host, api_port, api_user, encodedPassword, is_active ? 1 : 0, ssid, location]
+         (name, host, api_port, api_user, api_password, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [name, host, api_port, api_user, encodedPassword, is_active ? 1 : 0]
     );
 
     return this.findById(result.insertId);
@@ -81,7 +79,7 @@ const Router = {
       fields.api_password = encode(fields.api_password);
     }
 
-    const allowed = ['name', 'host', 'api_port', 'api_user', 'api_password', 'is_active', 'ssid', 'location'];
+    const allowed = ['name', 'host', 'api_port', 'api_user', 'api_password', 'is_active'];
     const keys = Object.keys(fields).filter((k) => allowed.includes(k));
 
     if (keys.length === 0) return this.findById(id);
